@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مساعد التقارير | جسور</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1117;
+            --bg2: #171b26;
+            --card: #1e2235;
+            --border: #2a2f45;
+            --gold: #d4a843;
+            --gold-dim: #a07c2a;
+            --gold-glow: rgba(212,168,67,0.15);
+            --gold-light: #f0c862;
+            --text: #e8eaf0;
+            --muted: #6b7494;
+            --muted2: #8891b5;
+            --error: #ff5b5b;
+            --success: #4ade80;
+            --step-done: #2a3d2e;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ═══ BACKGROUND PATTERN ═══ */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(212,168,67,0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(212,168,67,0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-wrapper { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 0 0 30px; }
+
+        /* ═══ HEADER ═══ */
+        .header {
+            background: linear-gradient(180deg, #13172299 0%, transparent 100%);
+            padding: 20px 18px 14px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+        .header-logo { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; }
+        .header-logo span { color: var(--gold); }
+        .header-sub { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 400; }
+
+        /* ═══ PROGRESS BAR ═══ */
+        .progress-wrap { padding: 14px 18px 0; }
+        .progress-steps { display: flex; align-items: center; gap: 0; }
+        .step-dot {
+            width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0;
+            transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+            cursor: pointer; position: relative; z-index: 2;
+        }
+        .step-dot.active { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 0 3px var(--gold-glow); }
+        .step-dot.done { border-color: var(--success); background: var(--step-done); color: var(--success); }
+        .step-dot.done::after { content: '✓'; font-size: 12px; }
+        .step-dot.done span { display: none; }
+        .step-line { flex: 1; height: 2px; background: var(--border); transition: background 0.35s; }
+        .step-line.done { background: var(--success); }
+
+        .step-labels { display: flex; justify-content: space-between; margin-top: 6px; padding: 0 2px; }
+        .step-label { font-size: 9px; color: var(--muted); text-align: center; width: 50px; transition: color 0.3s; }
+        .step-label.active { color: var(--gold); font-weight: 600; }
+        .step-label.done { color: var(--success); }
+
+        /* ═══ STEP PANELS ═══ */
+        .steps-container { padding: 14px 12px 0; overflow: hidden; }
+        .step-panel { display: none; animation: fadeSlide 0.3s ease forwards; }
+        .step-panel.active { display: block; }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* ═══ SECTION CARD ═══ */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .card-title {
+            font-size: 14px; font-weight: 800; color: var(--gold-light);
+            margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+            padding-bottom: 10px; border-bottom: 1px solid var(--border);
+        }
+        .card-title .icon { font-size: 16px; }
+
+        /* ═══ FORM FIELDS ═══ */
+        .form-row { display: flex; gap: 10px; }
+        .form-row .fg { flex: 1; }
+        .fg { margin-bottom: 13px; }
+        .fg:last-child { margin-bottom: 0; }
+
+        label { display: block; font-size: 12px; font-weight: 600; color: var(--muted2); margin-bottom: 5px; }
+        label .req { color: #ff6b6b; }
+
+        input[type="text"], input[type="date"], input[type="number"], textarea, select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg2);
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            color: var(--text);
+            font-family: 'Tajawal', sans-serif;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px var(--gold-glow);
+        }
+        input.error, textarea.error, select.error { border-color: var(--error); }
+        textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+        select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M5 6L0 0h10z' fill='%236b7494'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 12px center; padding-left: 30px; }
+
+        .field-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+        .field-error { font-size: 11px; color: var(--error); margin-top: 4px; display: none; }
+        .fg.has-error .field-error { display: block; }
+
+        /* ═══ CHAR COUNTER ═══ */
+        .textarea-wrap { position: relative; }
+        .char-count { position: absolute; bottom: 8px; left: 10px; font-size: 10px; color: var(--muted); pointer-events: none; }
+
+        /* ═══ TOGGLE RADIO ═══ */
+        .radio-toggle { display: flex; gap: 8px; margin-bottom: 10px; }
+        .rtog {
+            flex: 1; padding: 8px; border-radius: 8px; border: 1.5px solid var(--border);
+            background: var(--bg2); cursor: pointer; text-align: center;
+            font-size: 12px; font-weight: 600; color: var(--muted); transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+        .rtog.selected { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+        .rtog input { display: none; }
+
+        .dynamic-area { display: none; margin-top: 8px; }
+        .dynamic-area.visible { display: block; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ═══ CHECKBOX ITEMS ═══ */
+        .check-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+            background: var(--bg2); border: 1.5px solid var(--border); border-radius: 9px;
+            margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+        }
+        .check-item:hover { border-color: var(--gold-dim); }
+        .check-item.checked { border-color: var(--gold); background: var(--gold-glow); }
+        .check-item input[type="checkbox"] { display: none; }
+        .check-box {
+            width: 20px; height: 20px; border-radius: 5px; border: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;
+        }
+        .check-item.checked .check-box { background: var(--gold); border-color: var(--gold); }
+        .check-item.checked .check-box::after { content: '✓'; color: #0f1117; font-size: 11px; font-weight: 800; }
+        .check-item-label { font-size: 13px; font-weight: 500; flex: 1; }
+        .resource-detail { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+        .resource-detail.visible { display: block; animation: fadeIn 0.2s ease; }
+
+        /* ═══ TASK ITEMS ═══ */
+        .task-check-item { 
+            display: flex; align-items: center; gap: 10px; padding: 11px 12px;
+            background: var(--bg2); border: 1.5px solid var(--border); border-radius: 9px;
+            margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+        }
+        .task-check-item:hover { border-color: var(--gold-dim); }
+        .task-check-item.checked { border-color: var(--success); background: rgba(74,222,128,0.07); }
+        .task-check-item.checked .check-box { background: var(--success); border-color: var(--success); }
+        .task-check-item input[type="checkbox"] { display: none; }
+
+        /* ═══ SECTION DIVIDER ═══ */
+        .divider { display: flex; align-items: center; gap: 10px; margin: 15px 0 12px; }
+        .divider span { font-size: 12px; font-weight: 700; color: var(--muted2); white-space: nowrap; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+        /* ═══ NAVIGATION BUTTONS ═══ */
+        .nav-bar { display: flex; gap: 10px; padding: 14px 12px 0; }
+        .btn {
+            flex: 1; padding: 13px; border: none; border-radius: 10px; font-family: 'Tajawal', sans-serif;
+            font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex;
+            align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-next { background: var(--gold); color: #0f1117; }
+        .btn-next:active { background: var(--gold-dim); transform: scale(0.98); }
+        .btn-prev { background: var(--card); color: var(--muted2); border: 1.5px solid var(--border); flex: 0.6; }
+        .btn-submit { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #0f1117; box-shadow: 0 4px 20px rgba(212,168,67,0.35); }
+        .btn-submit:active { transform: scale(0.98); box-shadow: 0 2px 10px rgba(212,168,67,0.2); }
+
+        /* ═══ STEP SUMMARY (preview) ═══ */
+        .summary-section { background: var(--bg2); border-radius: 10px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); }
+        .summary-title { font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 8px; }
+        .summary-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; gap: 10px; }
+        .summary-key { font-size: 11px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+        .summary-val { font-size: 12px; color: var(--text); text-align: left; direction: rtl; word-break: break-word; }
+        .tag-pill { display: inline-block; background: var(--gold-glow); border: 1px solid var(--gold-dim); color: var(--gold-light); border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; margin: 2px; }
+
+        /* ═══ LOADING STATE ═══ */
+        .btn-submit.loading { opacity: 0.7; pointer-events: none; }
+        .spinner { width: 16px; height: 16px; border: 2px solid rgba(15,17,23,0.3); border-top-color: #0f1117; border-radius: 50%; animation: spin 0.6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ═══ SUCCESS SCREEN ═══ */
+        .success-screen {
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 60vh; text-align: center; padding: 40px 24px;
+        }
+        .success-screen.visible { display: flex; animation: fadeSlide 0.4s ease; }
+        .success-icon { font-size: 60px; margin-bottom: 16px; }
+        .success-title { font-size: 22px; font-weight: 800; color: var(--gold-light); margin-bottom: 8px; }
+        .success-sub { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+        /* ═══ HASHTAG PREVIEW ═══ */
+        .hashtag-preview {
+            display: inline-block; background: var(--gold-glow); border: 1px solid var(--gold-dim);
+            color: var(--gold-light); border-radius: 6px; padding: 3px 10px; font-size: 12px;
+            font-weight: 700; margin-top: 5px; direction: ltr;
+        }
+
+        /* ═══ TEXTAREA WITH HINT ═══ */
+        .optional-badge { font-size: 10px; background: var(--border); color: var(--muted); border-radius: 4px; padding: 1px 6px; margin-right: 6px; font-weight: 400; }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-logo">🤖 مساعد التقارير | <span>جسور</span></div>
+        <div class="header-sub">وثّق إبداعك، حفظاً للجهد والتاريخ</div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-wrap">
+        <div class="progress-steps">
+            <div class="step-dot active" id="dot1" onclick="goToStep(1)"><span>1</span></div>
+            <div class="step-line" id="line1"></div>
+            <div class="step-dot" id="dot2" onclick="goToStep(2)"><span>2</span></div>
+            <div class="step-line" id="line2"></div>
+            <div class="step-dot" id="dot3" onclick="goToStep(3)"><span>3</span></div>
+            <div class="step-line" id="line3"></div>
+            <div class="step-dot" id="dot4" onclick="goToStep(4)"><span>4</span></div>
+            <div class="step-line" id="line4"></div>
+            <div class="step-dot" id="dot5" onclick="goToStep(5)"><span>5</span></div>
+        </div>
+        <div class="step-labels">
+            <span class="step-label active" id="lbl1">الهوية</span>
+            <span class="step-label" id="lbl2">المحتوى</span>
+            <span class="step-label" id="lbl3">الرسائل</span>
+            <span class="step-label" id="lbl4">المونتير</span>
+            <span class="step-label" id="lbl5">المهام</span>
+        </div>
+    </div>
+
+    <!-- STEPS -->
+    <div class="steps-container">
+
+        <!-- ═══ STEP 1: هوية المجلس ═══ -->
+        <div class="step-panel active" id="step1">
+            <div class="card">
+                <div class="card-title"><span class="icon">📍</span> هوية المجلس</div>
+
+                <div class="fg" id="fg-series">
+                    <label>اسم السلسلة <span class="req">*</span></label>
+                    <input type="text" id="seriesName" placeholder="مثال: الطحاوية" oninput="updateHashPreview()">
+                    <div id="hashPreview" class="hashtag-preview" style="display:none"></div>
+                    <div class="field-hint">النظام سيضيف الهاشتاغ تلقائياً</div>
+                    <div class="field-error">هذا الحقل مطلوب</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="fg" id="fg-num">
+                        <label>رقم المجلس <span class="req">*</span></label>
+                        <input type="number" id="eventNumber" placeholder="01" min="1">
+                        <div class="field-error">هذا الحقل مطلوب</div>
+                    </div>
+                    <div class="fg">
+                        <label>التاريخ <span class="req">*</span></label>
+                        <input type="date" id="eventDate">
+                    </div>
+                </div>
+
+                <div class="fg" id="fg-anim">
+                    <label>المنشِّط(ة) <span class="req">*</span></label>
+                    <input type="text" id="animator" placeholder="اسمك الكريم">
+                    <div class="field-error">هذا الحقل مطلوب</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ STEP 2: محتوى المجلس ═══ -->
+        <div class="step-panel" id="step2">
+            <div class="card">
+                <div class="card-title"><span class="icon">📥</span> محتوى المجلس</div>
+
+                <div class="fg" id="fg-topics">
+                    <label>أهم المحاور <span class="req">*</span></label>
+                    <div class="textarea-wrap">
+                        <textarea id="mainTopics" placeholder="- المحور الأول&#10;- المحور الثاني&#10;- المحور الثالث" maxlength="1000" oninput="countChars(this, 'cnt-topics')"></textarea>
+                        <span class="char-count" id="cnt-topics">0/1000</span>
+                    </div>
+                    <div class="field-error">أدخل المحاور الرئيسية للمجلس</div>
+                </div>
+
+                <div class="fg">
+                    <label>فوائد ولطائف <span class="optional-badge">اختياري</span></label>
+                    <div class="textarea-wrap">
+                        <textarea id="benefits" placeholder="- د 45 - قصة معبرة عن الإخلاص&#10;- 1:15 - ملاحظة ذهبية من الأستاذ" maxlength="800" oninput="countChars(this, 'cnt-ben')"></textarea>
+                        <span class="char-count" id="cnt-ben">0/800</span>
+                    </div>
+                    <div class="field-hint">الصيغة: الوقت التقريبي - الفائدة</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ STEP 3: رسائل للنادي ═══ -->
+        <div class="step-panel" id="step3">
+            <div class="card">
+                <div class="card-title"><span class="icon">🪞</span> رسائل موجهة للنادي</div>
+
+                <!-- المشاكل -->
+                <div class="fg">
+                    <label>1️⃣ مشاكل أثناء النشاط (قاعة، تصوير، صوت...)</label>
+                    <div class="radio-toggle">
+                        <label class="rtog selected" id="rtog-prob-no" onclick="setRadio('prob','no')">
+                            <input type="radio" name="hasProblems" value="no" checked> 😌 لا توجد
+                        </label>
+                        <label class="rtog" id="rtog-prob-yes" onclick="setRadio('prob','yes')">
+                            <input type="radio" name="hasProblems" value="yes"> ⚠️ توجد
+                        </label>
+                    </div>
+                    <div class="dynamic-area" id="area-prob">
+                        <textarea id="probsArea" placeholder="مثال: القاعة كانت مغلقة بسبب..." style="min-height:70px"></textarea>
+                    </div>
+                </div>
+
+                <!-- التوصيات -->
+                <div class="fg">
+                    <label>2️⃣ توصيات لتطوير المجلس القادم</label>
+                    <div class="radio-toggle">
+                        <label class="rtog selected" id="rtog-recom-no" onclick="setRadio('recom','no')">
+                            <input type="radio" name="hasRecoms" value="no" checked> ➖ لا توجد
+                        </label>
+                        <label class="rtog" id="rtog-recom-yes" onclick="setRadio('recom','yes')">
+                            <input type="radio" name="hasRecoms" value="yes"> 💡 توجد
+                        </label>
+                    </div>
+                    <div class="dynamic-area" id="area-recom">
+                        <textarea id="recomsArea" placeholder="اقتراحاتك كمنشط..." style="min-height:70px"></textarea>
+                    </div>
+                </div>
+
+                <!-- رسائل الأساتذة -->
+                <div class="fg">
+                    <label>3️⃣ رسائل من الأستاذ أو الطلبة</label>
+                    <div class="radio-toggle">
+                        <label class="rtog selected" id="rtog-feed-no" onclick="setRadio('feed','no')">
+                            <input type="radio" name="hasFeedback" value="no" checked> ➖ لا توجد
+                        </label>
+                        <label class="rtog" id="rtog-feed-yes" onclick="setRadio('feed','yes')">
+                            <input type="radio" name="hasFeedback" value="yes"> 💬 توجد
+                        </label>
+                    </div>
+                    <div class="dynamic-area" id="area-feed">
+                        <textarea id="feedbackArea" placeholder="مثال: الأستاذ طلب توفير سبورة إضافية..." style="min-height:70px"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ STEP 4: موجه للمونتير ═══ -->
+        <div class="step-panel" id="step4">
+            <div class="card">
+                <div class="card-title"><span class="icon">🧑🏻‍💻</span> موجه للمونتير</div>
+
+                <div class="divider"><span>الموارد الخام</span></div>
+
+                <!-- مرئي أساسي -->
+                <div class="check-item" id="ci-vmain" onclick="toggleCheck('vmain')">
+                    <input type="checkbox" id="resVideoMain">
+                    <div class="check-box" id="cb-vmain"></div>
+                    <span class="check-item-label">🎥 التسجيل المرئي الأساسي</span>
+                </div>
+                <div class="resource-detail" id="rd-vmain">
+                    <div class="fg">
+                        <label>أين يوجد التسجيل؟</label>
+                        <select id="locVideoMainSelect" onchange="checkOtherOpt('locVideoMainSelect','oth-vmain')">
+                            <option value="" disabled selected>اختر المكان...</option>
+                            <option value="هاتف النادي">📱 هاتف النادي</option>
+                            <option value="حاسوب المقر">💻 حاسوب المقر</option>
+                            <option value="درايف النادي">☁️ درايف النادي</option>
+                            <option value="other">👤 شخص آخر...</option>
+                        </select>
+                    </div>
+                    <div class="fg" id="oth-vmain" style="display:none">
+                        <input type="text" id="locVideoMainOther" placeholder="اسم الشخص ومعرفه @username">
+                    </div>
+                </div>
+
+                <!-- مرئي ثانوي -->
+                <div class="check-item" id="ci-vsub" onclick="toggleCheck('vsub')">
+                    <input type="checkbox" id="resVideoSub">
+                    <div class="check-box" id="cb-vsub"></div>
+                    <span class="check-item-label">📱 التسجيل المرئي الثانوي</span>
+                </div>
+                <div class="resource-detail" id="rd-vsub">
+                    <input type="text" id="locVideoSub" placeholder="اسم الشخص والمعرف @username">
+                </div>
+
+                <!-- صوتي أساسي -->
+                <div class="check-item" id="ci-amain" onclick="toggleCheck('amain')">
+                    <input type="checkbox" id="resAudioMain">
+                    <div class="check-box" id="cb-amain"></div>
+                    <span class="check-item-label">🎙️ التسجيل الصوتي الأساسي</span>
+                </div>
+                <div class="resource-detail" id="rd-amain">
+                    <input type="text" id="locAudioMain" placeholder="اسم الشخص والمعرف @username">
+                </div>
+
+                <!-- صوتي احتياطي -->
+                <div class="check-item" id="ci-asub" onclick="toggleCheck('asub')">
+                    <input type="checkbox" id="resAudioSub">
+                    <div class="check-box" id="cb-asub"></div>
+                    <span class="check-item-label">🎧 التسجيل الصوتي الاحتياطي</span>
+                </div>
+                <div class="resource-detail" id="rd-asub">
+                    <input type="text" id="locAudioSub" placeholder="اسم الشخص والمعرف @username">
+                </div>
+
+                <!-- تسجيل شاشة -->
+                <div class="check-item" id="ci-screen" onclick="toggleCheck('screen')">
+                    <input type="checkbox" id="resScreen">
+                    <div class="check-box" id="cb-screen"></div>
+                    <span class="check-item-label">💻 تسجيل الشاشة الداخلي</span>
+                </div>
+                <div class="resource-detail" id="rd-screen">
+                    <input type="text" id="locScreen" placeholder="مثال: حاسوب المقر / درايف">
+                </div>
+
+                <div class="divider" style="margin-top:18px"><span>ملاحظات تقنية</span></div>
+
+                <div class="fg">
+                    <label>أوقات الحذف، إرفاق صور، تنبيهات خاصة <span class="optional-badge">اختياري</span></label>
+                    <textarea id="editorNotes" placeholder="- احذف الدقيقة من 10 إلى 12&#10;- أرفق صورة الكتاب في البداية" style="min-height:75px"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ STEP 5: مهام المجلس ═══ -->
+        <div class="step-panel" id="step5">
+            <div class="card">
+                <div class="card-title"><span class="icon">📋</span> مهام المجلس</div>
+
+                <div class="divider"><span>مهام متكررة</span></div>
+
+                <div class="task-check-item" id="tci-1" onclick="toggleTask('t1')">
+                    <input type="checkbox" id="task1">
+                    <div class="check-box" id="cb-t1"></div>
+                    <span class="check-item-label">📺 رفع المرئية الأساسية في اليوتيوب</span>
+                </div>
+                <div class="task-check-item" id="tci-2" onclick="toggleTask('t2')">
+                    <input type="checkbox" id="task2">
+                    <div class="check-box" id="cb-t2"></div>
+                    <span class="check-item-label">📻 نشر التسجيل الصوتي في القناة العلمية</span>
+                </div>
+                <div class="task-check-item" id="tci-3" onclick="toggleTask('t3')">
+                    <input type="checkbox" id="task3">
+                    <div class="check-box" id="cb-t3"></div>
+                    <span class="check-item-label">🔔 برمجة رسالة تذكير للمجلس القادم</span>
+                </div>
+
+                <div class="divider" style="margin-top:18px"><span>مهام إضافية</span></div>
+
+                <div class="fg">
+                    <label>مهام غير متكررة <span class="optional-badge">اختياري</span></label>
+                    <textarea id="specialTasks" placeholder="مثال: نشر جدول تصويت طلبه الأستاذ..&#10;تحضير ملخص مكتوب للمجلس.."></textarea>
+                </div>
+
+                <!-- PREVIEW SUMMARY -->
+                <div class="divider" style="margin-top:20px"><span>📄 مراجعة سريعة</span></div>
+                <div id="summaryArea"></div>
+            </div>
+        </div>
+
+    </div><!-- end steps-container -->
+
+    <!-- NAVIGATION -->
+    <div class="nav-bar" id="navBar">
+        <button class="btn btn-prev" id="btnPrev" onclick="prevStep()" style="display:none">← السابق</button>
+        <button class="btn btn-next" id="btnNext" onclick="nextStep()">التالي ←</button>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-screen" id="successScreen">
+        <div class="success-icon">✅</div>
+        <div class="success-title">أُرسل التقرير بنجاح!</div>
+        <div class="success-sub">جزاك الله خيراً على توثيق هذا المجلس 🌿<br>ستصل نسخة التقرير للقناة قريباً.</div>
+    </div>
+
+</div>
+
+<script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) tg.expand();
+    document.getElementById('eventDate').valueAsDate = new Date();
+
+    let currentStep = 1;
+    const TOTAL_STEPS = 5;
+
+    // ══════════════════════════════════
+    // STEP NAVIGATION
+    // ══════════════════════════════════
+    function goToStep(n) {
+        if (n < 1 || n > TOTAL_STEPS) return;
+        if (n > currentStep && !validateStep(currentStep)) return;
+        setStep(n);
+    }
+
+    function nextStep() {
+        if (currentStep === TOTAL_STEPS) { submitForm(); return; }
+        if (!validateStep(currentStep)) return;
+        if (currentStep + 1 === TOTAL_STEPS) buildSummary();
+        setStep(currentStep + 1);
+    }
+
+    function prevStep() {
+        if (currentStep > 1) setStep(currentStep - 1);
+    }
+
+    function setStep(n) {
+        document.getElementById(`step${currentStep}`).classList.remove('active');
+        currentStep = n;
+        document.getElementById(`step${currentStep}`).classList.add('active');
+        updateProgress();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateProgress() {
+        for (let i = 1; i <= TOTAL_STEPS; i++) {
+            const dot = document.getElementById(`dot${i}`);
+            const lbl = document.getElementById(`lbl${i}`);
+            if (i < currentStep) { dot.className = 'step-dot done'; lbl.className = 'step-label done'; }
+            else if (i === currentStep) { dot.className = 'step-dot active'; lbl.className = 'step-label active'; }
+            else { dot.className = 'step-dot'; lbl.className = 'step-label'; }
+            if (i < TOTAL_STEPS) {
+                document.getElementById(`line${i}`).className = i < currentStep ? 'step-line done' : 'step-line';
+            }
+        }
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+        btnPrev.style.display = currentStep > 1 ? 'flex' : 'none';
+        if (currentStep === TOTAL_STEPS) {
+            btnNext.textContent = '';
+            btnNext.innerHTML = '🚀 إرسال التقرير';
+            btnNext.className = 'btn btn-submit';
+        } else {
+            btnNext.innerHTML = 'التالي ←';
+            btnNext.className = 'btn btn-next';
+        }
+    }
+
+    // ══════════════════════════════════
+    // VALIDATION
+    // ══════════════════════════════════
+    function validateStep(step) {
+        let ok = true;
+        if (step === 1) {
+            ok = requireField('seriesName', 'fg-series') && ok;
+            ok = requireField('eventNumber', 'fg-num') && ok;
+            ok = requireField('animator', 'fg-anim') && ok;
+        } else if (step === 2) {
+            ok = requireField('mainTopics', 'fg-topics') && ok;
+        }
+        return ok;
+    }
+
+    function requireField(inputId, fgId) {
+        const val = document.getElementById(inputId).value.trim();
+        const fg = document.getElementById(fgId);
+        if (!val) { fg.classList.add('has-error'); document.getElementById(inputId).focus(); return false; }
+        fg.classList.remove('has-error'); return true;
+    }
+
+    // ══════════════════════════════════
+    // HELPERS
+    // ══════════════════════════════════
+    function updateHashPreview() {
+        const raw = document.getElementById('seriesName').value.trim();
+        const preview = document.getElementById('hashPreview');
+        if (raw) { preview.style.display = 'inline-block'; preview.textContent = `#تقرير_المجالس #${raw.replace(/#/g,'').replace(/\s+/g,'_')}`; }
+        else preview.style.display = 'none';
+        document.getElementById('fg-series')?.classList.remove('has-error');
+    }
+
+    function countChars(el, counterId) {
+        const max = el.getAttribute('maxlength');
+        document.getElementById(counterId).textContent = `${el.value.length}/${max}`;
+    }
+
+    // Radio toggles
+    const radioState = {};
+    function setRadio(key, val) {
+        radioState[key] = val;
+        const isYes = val === 'yes';
+        const map = { prob: ['area-prob', 'probsArea'], recom: ['area-recom', 'recomsArea'], feed: ['area-feed', 'feedbackArea'] };
+        const [areaId] = map[key];
+        document.getElementById(areaId).className = 'dynamic-area' + (isYes ? ' visible' : '');
+        document.getElementById(`rtog-${key}-yes`).className = 'rtog' + (isYes ? ' selected' : '');
+        document.getElementById(`rtog-${key}-no`).className = 'rtog' + (!isYes ? ' selected' : '');
+    }
+
+    // Checkbox checks (resources)
+    const checkState = {};
+    function toggleCheck(key) {
+        checkState[key] = !checkState[key];
+        const ci = document.getElementById(`ci-${key}`);
+        const cb = document.getElementById(`cb-${key}`);
+        const rd = document.getElementById(`rd-${key}`);
+        const chk = document.getElementById(`res${capitalize(key)}`);
+        if (checkState[key]) { ci.classList.add('checked'); rd.classList.add('visible'); if(chk) chk.checked = true; }
+        else { ci.classList.remove('checked'); rd.classList.remove('visible'); if(chk) chk.checked = false; }
+    }
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    function checkOtherOpt(selId, othId) {
+        document.getElementById(othId).style.display = document.getElementById(selId).value === 'other' ? 'block' : 'none';
+    }
+
+    // Task checks
+    const taskState = {};
+    function toggleTask(key) {
+        taskState[key] = !taskState[key];
+        const numMap = { t1: '1', t2: '2', t3: '3' };
+        const tci = document.getElementById(`tci-${numMap[key]}`);
+        const cb = document.getElementById(`cb-${key}`);
+        const chk = document.getElementById(`task${numMap[key]}`);
+        if (taskState[key]) { tci.classList.add('checked'); if(chk) chk.checked = true; }
+        else { tci.classList.remove('checked'); if(chk) chk.checked = false; }
+    }
+
+    // ══════════════════════════════════
+    // SUMMARY BUILDER
+    // ══════════════════════════════════
+    function buildSummary() {
+        const series = document.getElementById('seriesName').value.trim().replace(/#/g,'');
+        const hash = series.replace(/\s+/g,'_');
+        const num = document.getElementById('eventNumber').value;
+        const date = document.getElementById('eventDate').value;
+        const anim = document.getElementById('animator').value.trim();
+        const topics = document.getElementById('mainTopics').value.trim();
+
+        let resourcesList = [];
+        if (checkState['vmain']) resourcesList.push('مرئي أساسي');
+        if (checkState['vsub']) resourcesList.push('مرئي ثانوي');
+        if (checkState['amain']) resourcesList.push('صوتي أساسي');
+        if (checkState['asub']) resourcesList.push('صوتي احتياطي');
+        if (checkState['screen']) resourcesList.push('تسجيل شاشة');
+
+        let tasksList = [];
+        if (taskState['t1']) tasksList.push('رفع المرئية');
+        if (taskState['t2']) tasksList.push('نشر الصوت');
+        if (taskState['t3']) tasksList.push('برمجة التذكير');
+
+        const html = `
+            <div class="summary-section">
+                <div class="summary-title">📍 هوية المجلس</div>
+                <div class="summary-row"><span class="summary-key">السلسلة:</span><span class="summary-val">${series} — #${hash}</span></div>
+                <div class="summary-row"><span class="summary-key">الرقم:</span><span class="summary-val">${num}</span></div>
+                <div class="summary-row"><span class="summary-key">التاريخ:</span><span class="summary-val">${date}</span></div>
+                <div class="summary-row"><span class="summary-key">المنشط:</span><span class="summary-val">${anim}</span></div>
+            </div>
+            <div class="summary-section">
+                <div class="summary-title">📥 المحاور</div>
+                <div class="summary-val" style="font-size:12px;white-space:pre-wrap;line-height:1.7">${topics.substring(0,200)}${topics.length>200?'..':''}</div>
+            </div>
+            ${resourcesList.length ? `<div class="summary-section"><div class="summary-title">🧑🏻‍💻 الموارد</div><div>${resourcesList.map(r=>`<span class="tag-pill">${r}</span>`).join('')}</div></div>` : ''}
+            ${tasksList.length ? `<div class="summary-section"><div class="summary-title">📋 المهام المؤكدة</div><div>${tasksList.map(t=>`<span class="tag-pill">${t}</span>`).join('')}</div></div>` : ''}
+        `;
+        document.getElementById('summaryArea').innerHTML = html;
+    }
+
+    // ══════════════════════════════════
+    // SUBMIT
+    // ══════════════════════════════════
+    function submitForm() {
+        const rawSeries = document.getElementById('seriesName').value.trim();
+        const cleanName = rawSeries.replace(/#/g, '').trim();
+        const hashName = cleanName.replace(/\s+/g, '_');
+        const eventNum = document.getElementById('eventNumber').value.trim();
+        const animator = document.getElementById('animator').value.trim();
+        const topics = document.getElementById('mainTopics').value.trim();
+
+        let resources = "";
+        if (checkState['vmain']) {
+            let val = document.getElementById('locVideoMainSelect').value;
+            if (val === 'other') val = document.getElementById('locVideoMainOther').value;
+            resources += `🎥 مرئي أساسي: ${val || 'لم يحدد'}\n`;
+        }
+        if (checkState['vsub']) resources += `📱 مرئي ثانوي: ${document.getElementById('locVideoSub').value || 'لم يحدد'}\n`;
+        if (checkState['amain']) resources += `🎙️ صوتي أساسي: ${document.getElementById('locAudioMain').value || 'لم يحدد'}\n`;
+        if (checkState['asub']) resources += `🎧 صوتي احتياطي: ${document.getElementById('locAudioSub').value || 'لم يحدد'}\n`;
+        if (checkState['screen']) resources += `💻 تسجيل شاشة: ${document.getElementById('locScreen').value || 'لم يحدد'}\n`;
+        if (!resources) resources = 'لا توجد موارد محددة.';
+
+        let tasksStr = '';
+        if (taskState['t1']) tasksStr += '☑️ رفع المرئية\n';
+        if (taskState['t2']) tasksStr += '☑️ نشر الصوت\n';
+        if (taskState['t3']) tasksStr += '☑️ برمجة التذكير\n';
+
+        const probVal = radioState['prob'] === 'yes' ? (document.getElementById('probsArea').value || 'لم تُحدد') : 'لا توجد مشاكل (الحمد لله)';
+        const recomVal = radioState['recom'] === 'yes' ? (document.getElementById('recomsArea').value || 'لم تُحدد') : 'لا توجد';
+        const feedVal = radioState['feed'] === 'yes' ? (document.getElementById('feedbackArea').value || 'لم تُحدد') : 'لا توجد';
+
+        const payload = {
+            hashtag: `#تقرير_المجالس #${hashName}`,
+            searchName: `[${cleanName}]`,
+            eventNumber: eventNum,
+            eventDate: document.getElementById('eventDate').value,
+            animator,
+            mainTopics: topics,
+            benefits: document.getElementById('benefits').value || '-',
+            problems: probVal,
+            recommendations: recomVal,
+            feedback: feedVal,
+            resources,
+            editorNotes: document.getElementById('editorNotes').value || '-',
+            tasksDone: tasksStr || 'لم تُحدد مهام',
+            specialTasks: document.getElementById('specialTasks').value || '-'
+        };
+
+        const WEBHOOK_URL = 'https://hook.eu1.make.com/0tnh2m9uchxl7newnf9uyuvhgd081fnc';
+        if (WEBHOOK_URL === 'YOUR_MAKE_WEBHOOK_URL_HERE') {
+            if (tg) tg.showAlert('تنبيه للمطور: أضف رابط Webhook في الكود.');
+            else alert('تنبيه: أضف رابط Webhook في الكود.');
+            return;
+        }
+
+        const btn = document.getElementById('btnNext');
+        btn.classList.add('loading');
+        btn.innerHTML = '<div class="spinner"></div> جارٍ الإرسال...';
+
+        fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }).then(() => {
+            document.querySelector('.steps-container').style.display = 'none';
+            document.getElementById('navBar').style.display = 'none';
+            document.getElementById('successScreen').classList.add('visible');
+            setTimeout(() => { if (tg) tg.close(); }, 2800);
+        }).catch(() => {
+            if (tg) tg.showAlert('⚠️ حدث خطأ في الاتصال. تحقق من الإنترنت وأعد المحاولة.');
+            else alert('خطأ في الاتصال.');
+            btn.classList.remove('loading');
+            updateProgress();
+        });
+    }
+
+    // Remove error on input
+    document.querySelectorAll('input, textarea').forEach(el => {
+        el.addEventListener('input', () => el.closest('.fg')?.classList.remove('has-error'));
+    });
+</script>
+</body>
+</html>
