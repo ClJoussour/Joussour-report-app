@@ -8,20 +8,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0f1117;
-            --bg2: #171b26;
-            --card: #1e2235;
-            --border: #2a2f45;
+            --bg: #0a0d14;
+            --bg2: #121620;
+            --card: #181d2e;
+            --border: #252b40;
+            --border-light: #2f3652;
             --gold: #d4a843;
             --gold-dim: #a07c2a;
-            --gold-glow: rgba(212,168,67,0.15);
+            --gold-glow: rgba(212,168,67,0.12);
             --gold-light: #f0c862;
             --text: #e8eaf0;
-            --muted: #6b7494;
-            --muted2: #8891b5;
+            --muted: #7f8ab0;
+            --muted2: #5d6580;
             --error: #ff5b5b;
             --success: #4ade80;
-            --step-done: #2a3d2e;
+            --success-glow: rgba(74,222,128,0.12);
+            --step-done: #1a3324;
+            --glass: rgba(10,13,20,0.85);
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,228 +35,254 @@
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* ═══ BACKGROUND PATTERN ═══ */
         body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                radial-gradient(circle at 20% 20%, rgba(212,168,67,0.06) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(212,168,67,0.04) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
+            content: ''; position: fixed; inset: 0;
+            background: radial-gradient(ellipse at 15% 15%, rgba(212,168,67,0.07) 0%, transparent 50%),
+                        radial-gradient(ellipse at 85% 85%, rgba(212,168,67,0.04) 0%, transparent 50%);
+            pointer-events: none; z-index: 0;
+            animation: bgPulse 15s ease-in-out infinite alternate;
         }
+        @keyframes bgPulse { 0% { opacity: 0.8; } 100% { opacity: 1.2; } }
 
-        .app-wrapper { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 0 0 30px; }
+        .app-wrapper { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 0 0 100px; }
 
         /* ═══ HEADER ═══ */
         .header {
-            background: linear-gradient(180deg, #13172299 0%, transparent 100%);
-            padding: 20px 18px 14px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--border);
+            background: var(--glass); padding: 14px 16px; position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px;
         }
-        .header-logo { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; }
-        .header-logo span { color: var(--gold); }
-        .header-sub { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 400; }
+        .header-logo-img { width: 42px; height: 42px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg2); padding: 3px;}
+        .header-text { flex: 1; }
+        .header-title { font-size: 18px; font-weight: 900; }
+        .header-title span { color: var(--gold); }
+        .header-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+        /* ═══ DRAFT BANNER ═══ */
+        .draft-banner {
+            background: linear-gradient(135deg, rgba(212,168,67,0.1), rgba(59,130,246,0.05));
+            border: 1px solid var(--gold-dim); border-radius: 12px;
+            padding: 12px 16px; margin: 12px 12px 0; display: none; align-items: center; gap: 10px;
+            animation: slideDown 0.3s ease;
+        }
+        .draft-banner.visible { display: flex; }
+        .draft-banner-text { flex: 1; }
+        .draft-banner-title { font-size: 12px; font-weight: 700; color: var(--gold-light); }
+        .draft-banner-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+        .draft-btn { padding: 6px 14px; border: none; border-radius: 8px; font-family: 'Tajawal', sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .draft-btn-restore { background: var(--gold); color: #0a0c14; }
+        .draft-btn-discard { background: var(--bg2); color: var(--muted); border: 1px solid var(--border); }
 
         /* ═══ PROGRESS BAR ═══ */
-        .progress-wrap { padding: 14px 18px 0; }
+        .progress-wrap { padding: 14px 16px 0; }
+        .progress-bar-track { width: 100%; height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold), var(--gold-light)); transition: width 0.4s ease; box-shadow: 0 0 8px rgba(212,168,67,0.4); }
         .progress-steps { display: flex; align-items: center; gap: 0; }
-        .step-dot {
-            width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0;
-            transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
-            cursor: pointer; position: relative; z-index: 2;
-        }
-        .step-dot.active { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 0 3px var(--gold-glow); }
+        .step-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0; transition: all 0.3s ease; background: var(--bg); position: relative; z-index: 2; }
+        .step-dot.active { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 0 4px var(--gold-glow); transform: scale(1.1); }
         .step-dot.done { border-color: var(--success); background: var(--step-done); color: var(--success); }
-        .step-dot.done::after { content: '✓'; font-size: 12px; }
+        .step-dot.done::after { content: '✓'; font-size: 13px; font-weight: 800; }
         .step-dot.done span { display: none; }
-        .step-line { flex: 1; height: 2px; background: var(--border); transition: background 0.35s; }
+        .step-line { flex: 1; height: 2px; background: var(--border); transition: background 0.4s ease; }
         .step-line.done { background: var(--success); }
-
-        .step-labels { display: flex; justify-content: space-between; margin-top: 6px; padding: 0 2px; }
-        .step-label { font-size: 9px; color: var(--muted); text-align: center; width: 50px; transition: color 0.3s; }
-        .step-label.active { color: var(--gold); font-weight: 600; }
+        .step-labels { display: flex; justify-content: space-between; margin-top: 8px; padding: 0 2px; }
+        .step-label { font-size: 9px; color: var(--muted2); text-align: center; width: 50px; font-weight: 500; transition: all 0.3s; }
+        .step-label.active { color: var(--gold); font-weight: 700; }
         .step-label.done { color: var(--success); }
 
-        /* ═══ STEP PANELS ═══ */
-        .steps-container { padding: 14px 12px 0; overflow: hidden; }
+        /* ═══ PANELS & CARDS ═══ */
+        .steps-container { padding: 14px 12px 0; overflow: hidden; min-height: 300px; }
         .step-panel { display: none; animation: fadeSlide 0.3s ease forwards; }
         .step-panel.active { display: block; }
-        @keyframes fadeSlide { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ═══ SECTION CARD ═══ */
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-        .card-title {
-            font-size: 14px; font-weight: 800; color: var(--gold-light);
-            margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
-            padding-bottom: 10px; border-bottom: 1px solid var(--border);
-        }
-        .card-title .icon { font-size: 16px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px 16px; margin-bottom: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); transition: border-color 0.3s; }
+        .card:hover { border-color: var(--border-light); }
+        .card-title { font-size: 15px; font-weight: 800; color: var(--gold-light); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+
+        /* ═══ ALERTS & INFO ═══ */
+        .alert-box { border-radius: 10px; padding: 12px; margin-bottom: 14px; display: flex; align-items: flex-start; gap: 8px; }
+        .alert-box.alert-gold { background: rgba(212,168,67,0.08); border: 1px solid rgba(212,168,67,0.2); }
+        .alert-box.alert-blue { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); }
+        .alert-box.alert-purple { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+        .alert-box .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+        .alert-box .alert-text { font-size: 11px; line-height: 1.8; color: var(--text); }
+        .alert-box .alert-text strong { color: var(--gold-light); }
 
         /* ═══ FORM FIELDS ═══ */
         .form-row { display: flex; gap: 10px; }
         .form-row .fg { flex: 1; }
-        .fg { margin-bottom: 13px; }
+        .fg { margin-bottom: 15px; }
         .fg:last-child { margin-bottom: 0; }
-
-        label { display: block; font-size: 12px; font-weight: 600; color: var(--muted2); margin-bottom: 5px; }
-        label .req { color: #ff6b6b; }
+        label { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+        label .req { color: var(--error); font-size: 14px; }
 
         input[type="text"], input[type="date"], input[type="number"], textarea, select {
-            width: 100%;
-            padding: 10px 12px;
-            background: var(--bg2);
-            border: 1.5px solid var(--border);
-            border-radius: 9px;
-            color: var(--text);
-            font-family: 'Tajawal', sans-serif;
-            font-size: 13px;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            appearance: none;
-            -webkit-appearance: none;
+            width: 100%; padding: 12px 14px; background: var(--bg2); border: 1.5px solid var(--border);
+            border-radius: 10px; color: var(--text); font-family: 'Tajawal', sans-serif; font-size: 13px;
+            outline: none; transition: all 0.25s ease; appearance: none;
         }
-        input:focus, textarea:focus, select:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 0 3px var(--gold-glow);
-        }
+        input:focus, textarea:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-glow); background: rgba(18,22,32,0.9); }
         input.error, textarea.error, select.error { border-color: var(--error); }
-        textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+        textarea { resize: vertical; min-height: 80px; line-height: 1.7; }
         select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M5 6L0 0h10z' fill='%236b7494'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 12px center; padding-left: 30px; }
 
-        .field-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
-        .field-error { font-size: 11px; color: var(--error); margin-top: 4px; display: none; }
-        .fg.has-error .field-error { display: block; }
+        .field-hint { font-size: 11px; color: var(--muted2); margin-top: 5px; display: flex; align-items: center; gap: 4px; line-height: 1.6;}
+        .field-error { font-size: 11px; color: var(--error); margin-top: 5px; display: none; align-items: center; gap: 4px; }
+        .fg.has-error .field-error { display: flex; }
+        .fg.has-error input, .fg.has-error textarea, .fg.has-error select { border-color: var(--error); animation: shake 0.4s ease; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 
-        /* ═══ CHAR COUNTER ═══ */
         .textarea-wrap { position: relative; }
-        .char-count { position: absolute; bottom: 8px; left: 10px; font-size: 10px; color: var(--muted); pointer-events: none; }
+        .char-count { position: absolute; bottom: 8px; left: 10px; font-size: 10px; color: var(--muted2); background: var(--bg2); padding: 2px 6px; border-radius: 4px; pointer-events: none; }
 
-        /* ═══ TOGGLE RADIO ═══ */
+        /* ═══ HIJRI BADGE ═══ */
+        .hijri-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(212,168,67,0.1); border: 1px solid rgba(212,168,67,0.25);
+            border-radius: 8px; padding: 6px 12px; margin-top: 8px;
+            font-size: 12px; color: var(--gold-light); font-weight: 700;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* ═══ DYNAMIC CARDS (REELS / DELETIONS / TASKS) ═══ */
+        .dynamic-card {
+            background: rgba(255,255,255,0.02); border: 1px dashed var(--border); border-radius: 12px;
+            padding: 14px; margin-bottom: 12px; position: relative; animation: fadeIn 0.3s ease;
+        }
+        .dynamic-card .btn-remove {
+            position: absolute; top: -8px; left: -8px; color: var(--bg); background: var(--error);
+            border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 10px; font-weight: bold;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(255,91,91,0.4);
+        }
+        .btn-add-dynamic {
+            width: 100%; padding: 12px; background: rgba(212,168,67,0.05); border: 1.5px dashed var(--gold-dim);
+            color: var(--gold); font-family: 'Tajawal', sans-serif; font-size: 13px; font-weight: 700;
+            border-radius: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-add-dynamic:hover { background: var(--gold-glow); border-color: var(--gold); }
+
+        /* ═══ RADIO & CHECKBOXES ═══ */
         .radio-toggle { display: flex; gap: 8px; margin-bottom: 10px; }
-        .rtog {
-            flex: 1; padding: 8px; border-radius: 8px; border: 1.5px solid var(--border);
-            background: var(--bg2); cursor: pointer; text-align: center;
-            font-size: 12px; font-weight: 600; color: var(--muted); transition: all 0.2s;
-            display: flex; align-items: center; justify-content: center; gap: 5px;
-        }
-        .rtog.selected { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+        .rtog { flex: 1; padding: 10px 8px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--bg2); cursor: pointer; text-align: center; font-size: 12px; font-weight: 600; color: var(--muted); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .rtog.selected { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); box-shadow: 0 0 0 2px var(--gold-glow); }
         .rtog input { display: none; }
-
         .dynamic-area { display: none; margin-top: 8px; }
-        .dynamic-area.visible { display: block; animation: fadeIn 0.25s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        .dynamic-area.visible { display: block; animation: fadeIn 0.3s ease; }
 
-        /* ═══ CHECKBOX ITEMS ═══ */
-        .check-item {
-            display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-            background: var(--bg2); border: 1.5px solid var(--border); border-radius: 9px;
-            margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
-        }
-        .check-item:hover { border-color: var(--gold-dim); }
+        .check-item, .task-check-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--bg2); border: 1.5px solid var(--border); border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+        .check-item:active, .task-check-item:active { transform: scale(0.98); }
         .check-item.checked { border-color: var(--gold); background: var(--gold-glow); }
-        .check-item input[type="checkbox"] { display: none; }
-        .check-box {
-            width: 20px; height: 20px; border-radius: 5px; border: 2px solid var(--border);
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;
-        }
+        .task-check-item.checked { border-color: var(--success); background: var(--success-glow); }
+        .check-item input[type="checkbox"], .task-check-item input[type="checkbox"] { display: none; }
+        .check-box { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
         .check-item.checked .check-box { background: var(--gold); border-color: var(--gold); }
-        .check-item.checked .check-box::after { content: '✓'; color: #0f1117; font-size: 11px; font-weight: 800; }
+        .task-check-item.checked .check-box { background: var(--success); border-color: var(--success); }
+        .checked .check-box::after { content: '✓'; color: #0a0d14; font-size: 12px; font-weight: 800; }
         .check-item-label { font-size: 13px; font-weight: 500; flex: 1; }
-        .resource-detail { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+        .resource-detail { display: none; margin-top: 10px; padding: 12px; border: 1px dashed var(--border); border-radius: 10px; background: rgba(18,22,32,0.5); }
         .resource-detail.visible { display: block; animation: fadeIn 0.2s ease; }
 
-        /* ═══ TASK ITEMS ═══ */
-        .task-check-item { 
-            display: flex; align-items: center; gap: 10px; padding: 11px 12px;
-            background: var(--bg2); border: 1.5px solid var(--border); border-radius: 9px;
-            margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
-        }
-        .task-check-item:hover { border-color: var(--gold-dim); }
-        .task-check-item.checked { border-color: var(--success); background: rgba(74,222,128,0.07); }
-        .task-check-item.checked .check-box { background: var(--success); border-color: var(--success); }
-        .task-check-item input[type="checkbox"] { display: none; }
+        .divider { display: flex; align-items: center; gap: 10px; margin: 18px 0 14px; }
+        .divider span { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
 
-        /* ═══ SECTION DIVIDER ═══ */
-        .divider { display: flex; align-items: center; gap: 10px; margin: 15px 0 12px; }
-        .divider span { font-size: 12px; font-weight: 700; color: var(--muted2); white-space: nowrap; }
-        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        /* ═══ RECENT SERIES ═══ */
+        .recent-series { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .recent-pill { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 11px; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+        .recent-pill:hover { border-color: var(--gold-dim); color: var(--gold); background: var(--gold-glow); }
 
         /* ═══ NAVIGATION BUTTONS ═══ */
-        .nav-bar { display: flex; gap: 10px; padding: 14px 12px 0; }
-        .btn {
-            flex: 1; padding: 13px; border: none; border-radius: 10px; font-family: 'Tajawal', sans-serif;
-            font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex;
-            align-items: center; justify-content: center; gap: 6px;
-        }
-        .btn-next { background: var(--gold); color: #0f1117; }
-        .btn-next:active { background: var(--gold-dim); transform: scale(0.98); }
-        .btn-prev { background: var(--card); color: var(--muted2); border: 1.5px solid var(--border); flex: 0.6; }
-        .btn-submit { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #0f1117; box-shadow: 0 4px 20px rgba(212,168,67,0.35); }
-        .btn-submit:active { transform: scale(0.98); box-shadow: 0 2px 10px rgba(212,168,67,0.2); }
+        .nav-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; display: flex; gap: 10px; padding: 14px 16px; background: linear-gradient(0deg, var(--bg) 70%, transparent 100%); z-index: 99; }
+        .btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-family: 'Tajawal', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn:active { transform: scale(0.97); }
+        .btn-next { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #0a0d14; box-shadow: 0 4px 20px rgba(212,168,67,0.3); }
+        .btn-prev { background: var(--card); color: var(--muted); border: 1.5px solid var(--border); flex: 0.5; }
+        .btn-submit { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #0a0d14; box-shadow: 0 4px 24px rgba(212,168,67,0.4); }
 
-        /* ═══ STEP SUMMARY (preview) ═══ */
-        .summary-section { background: var(--bg2); border-radius: 10px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); }
+        /* ═══ SUMMARY & SUCCESS ═══ */
+        .summary-section { background: var(--bg2); border-radius: 12px; padding: 14px; margin-bottom: 10px; border: 1px solid var(--border); }
         .summary-title { font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 8px; }
         .summary-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; gap: 10px; }
         .summary-key { font-size: 11px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
         .summary-val { font-size: 12px; color: var(--text); text-align: left; direction: rtl; word-break: break-word; }
-        .tag-pill { display: inline-block; background: var(--gold-glow); border: 1px solid var(--gold-dim); color: var(--gold-light); border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; margin: 2px; }
+        
+        .success-screen { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; text-align: center; padding: 40px 24px; }
+        .success-screen.visible { display: flex; animation: fadeIn 0.5s ease; }
+        .success-icon { font-size: 70px; margin-bottom: 16px; animation: bounce 0.6s ease 0.3s both; }
+        @keyframes bounce { 0% { transform: scale(0); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .success-title { font-size: 24px; font-weight: 900; color: var(--gold-light); margin-bottom: 10px; }
+        .success-sub { font-size: 14px; color: var(--muted); line-height: 1.8; }
 
-        /* ═══ LOADING STATE ═══ */
+        /* ═══ MODAL ═══ */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+        .modal-overlay.visible { display: flex; animation: fadeIn 0.2s ease; }
+        .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px 22px; max-width: 360px; width: 100%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .modal-icon { font-size: 40px; margin-bottom: 12px; }
+        .modal-title { font-size: 17px; font-weight: 800; color: var(--gold-light); margin-bottom: 10px; }
+        .modal-desc { font-size: 13px; color: var(--muted); line-height: 1.8; margin-bottom: 20px; }
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-family: 'Tajawal', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .modal-btn-confirm { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #0a0d14; }
+        .modal-btn-cancel { background: var(--bg2); color: var(--muted); border: 1.5px solid var(--border); }
+
+        /* ═══ CONFETTI ═══ */
+        .confetti-container { position: fixed; inset: 0; pointer-events: none; z-index: 10000; overflow: hidden; }
+        .confetti-piece { position: absolute; width: 10px; height: 10px; top: -10px; opacity: 0; animation: confettiFall linear forwards; }
+        @keyframes confettiFall { 0% { opacity: 1; transform: translateY(0) rotate(0deg); } 100% { opacity: 0; transform: translateY(100vh) rotate(720deg); } }
+
+        /* ═══ UTILS ═══ */
+        .hashtag-preview { display: inline-block; background: var(--gold-glow); border: 1px solid var(--gold-dim); color: var(--gold-light); border-radius: 8px; padding: 4px 12px; font-size: 12px; font-weight: 700; margin-top: 6px; direction: ltr; }
+        .optional-badge { font-size: 9px; background: var(--border); color: var(--muted); border-radius: 4px; padding: 2px 6px; font-weight: 400; }
+        .anim-section { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .anim-main { padding: 12px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+        .anim-sub { padding: 12px; background: rgba(18,22,32,0.4); }
+        .badge-required { font-size: 9px; background: var(--error-glow); color: var(--error); border-radius: 4px; padding: 2px 6px; }
+        
+        .autosave-badge { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: var(--success); color: #0a0d14; font-size: 11px; font-weight: 700; padding: 6px 16px; border-radius: 20px; z-index: 101; opacity: 0; transition: all 0.3s; pointer-events: none; box-shadow: 0 4px 12px rgba(74,222,128,0.3); }
+        .autosave-badge.show { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+        
         .btn-submit.loading { opacity: 0.7; pointer-events: none; }
-        .spinner { width: 16px; height: 16px; border: 2px solid rgba(15,17,23,0.3); border-top-color: #0f1117; border-radius: 50%; animation: spin 0.6s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ═══ SUCCESS SCREEN ═══ */
-        .success-screen {
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            min-height: 60vh; text-align: center; padding: 40px 24px;
-        }
-        .success-screen.visible { display: flex; animation: fadeSlide 0.4s ease; }
-        .success-icon { font-size: 60px; margin-bottom: 16px; }
-        .success-title { font-size: 22px; font-weight: 800; color: var(--gold-light); margin-bottom: 8px; }
-        .success-sub { font-size: 14px; color: var(--muted); line-height: 1.6; }
-
-        /* ═══ HASHTAG PREVIEW ═══ */
-        .hashtag-preview {
-            display: inline-block; background: var(--gold-glow); border: 1px solid var(--gold-dim);
-            color: var(--gold-light); border-radius: 6px; padding: 3px 10px; font-size: 12px;
-            font-weight: 700; margin-top: 5px; direction: ltr;
-        }
-
-        /* ═══ TEXTAREA WITH HINT ═══ */
-        .optional-badge { font-size: 10px; background: var(--border); color: var(--muted); border-radius: 4px; padding: 1px 6px; margin-right: 6px; font-weight: 400; }
+        .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(10,13,20,0.3); border-top-color: #0a0d14; border-radius: 50%; animation: spin 0.6s linear infinite; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
+
+<div class="autosave-badge" id="autosaveBadge">✓ تم الحفظ كمسودة</div>
+
 <div class="app-wrapper">
 
     <!-- HEADER -->
     <div class="header">
-        <div class="header-logo">🤖 مساعد التقارير | <span>جسور</span></div>
-        <div class="header-sub">وثّق إبداعك، حفظاً للجهد والتاريخ</div>
+        <img src="https://ui-avatars.com/api/?name=J&background=181d2e&color=d4a843&bold=true" alt="شعار النادي" class="header-logo-img">
+        <div class="header-text">
+            <div class="header-title">مساعد التقارير | <span>جسور</span></div>
+            <div class="header-sub">وثّق إبداعك، حفظاً للجهد والتاريخ</div>
+        </div>
+    </div>
+
+    <!-- DRAFT BANNER -->
+    <div class="draft-banner" id="draftBanner">
+        <div style="font-size: 20px;">📄</div>
+        <div class="draft-banner-text">
+            <div class="draft-banner-title">توجد مسودة محفوظة</div>
+            <div class="draft-banner-sub">هل تريد إكمال التقرير السابق؟</div>
+        </div>
+        <div style="display:flex; gap:6px">
+            <button class="draft-btn draft-btn-restore" onclick="restoreDraft()">استعادة</button>
+            <button class="draft-btn draft-btn-discard" onclick="discardDraft()">تجاهل</button>
+        </div>
     </div>
 
     <!-- PROGRESS -->
     <div class="progress-wrap">
+        <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progressFill" style="width:20%"></div>
+        </div>
         <div class="progress-steps">
             <div class="step-dot active" id="dot1" onclick="goToStep(1)"><span>1</span></div>
             <div class="step-line" id="line1"></div>
@@ -274,38 +303,61 @@
         </div>
     </div>
 
-    <!-- STEPS -->
+    <!-- STEPS CONTAINER -->
     <div class="steps-container">
 
         <!-- ═══ STEP 1: هوية المجلس ═══ -->
         <div class="step-panel active" id="step1">
             <div class="card">
-                <div class="card-title"><span class="icon">📍</span> هوية المجلس</div>
+                <div class="card-title">
+                    <span class="icon">📍</span> هوية المجلس
+                </div>
+
+                <div class="alert-box alert-gold">
+                    <span class="alert-icon">💡</span>
+                    <span class="alert-text">
+                        <strong>تنبيه مهم:</strong> استخدم تسمية <strong>مختصرة وموحّدة</strong> للسلسلة كل أسبوع (مثال: «الطحاوية» وليس «شرح متن الطحاوية») للحفاظ على الأرشفة.
+                    </span>
+                </div>
 
                 <div class="fg" id="fg-series">
                     <label>اسم السلسلة <span class="req">*</span></label>
-                    <input type="text" id="seriesName" placeholder="مثال: الطحاوية" oninput="updateHashPreview()">
+                    <input type="text" id="seriesName" placeholder="مثال: الطحاوية" oninput="updateHashPreview(); autoSave();">
+                    <div class="recent-series" id="recentSeries"></div>
                     <div id="hashPreview" class="hashtag-preview" style="display:none"></div>
-                    <div class="field-hint">النظام سيضيف الهاشتاغ تلقائياً</div>
                     <div class="field-error">هذا الحقل مطلوب</div>
                 </div>
 
                 <div class="form-row">
                     <div class="fg" id="fg-num">
                         <label>رقم المجلس <span class="req">*</span></label>
-                        <input type="number" id="eventNumber" placeholder="01" min="1">
-                        <div class="field-error">هذا الحقل مطلوب</div>
+                        <input type="number" id="eventNumber" placeholder="01" min="1" oninput="autoSave()">
+                        <div class="field-error">مطلوب</div>
                     </div>
                     <div class="fg">
                         <label>التاريخ <span class="req">*</span></label>
-                        <input type="date" id="eventDate">
+                        <input type="date" id="eventDate" onchange="updateHijriDate(); autoSave();">
+                        <div class="hijri-badge" id="hijriDate" style="display:none">
+                            <span>🌙</span>
+                            <span id="hijriText"></span>
+                        </div>
                     </div>
                 </div>
 
+                <div class="divider"><span>👤 المنشّطون</span></div>
+
                 <div class="fg" id="fg-anim">
-                    <label>المنشِّط(ة) <span class="req">*</span></label>
-                    <input type="text" id="animator" placeholder="اسمك الكريم">
-                    <div class="field-error">هذا الحقل مطلوب</div>
+                    <div class="anim-section">
+                        <div class="anim-main">
+                            <label style="margin-bottom:8px">🎙️ المنشط الرئيسي <span class="badge-required" style="margin-right:auto">واجب (يُحفظ تلقائياً)</span></label>
+                            <input type="text" id="animator" placeholder="اسم المنشط الرئيسي" oninput="saveGlobalAnimator(this.value); autoSave();">
+                        </div>
+                        <div class="anim-sub">
+                            <label style="margin-bottom:8px">🤝 منشط مساعد <span class="optional-badge" style="margin-right:auto">اختياري</span></label>
+                            <input type="text" id="animatorHelper" placeholder="اسم المساعد (إن وُجد)" oninput="autoSave()">
+                        </div>
+                    </div>
+                    <div class="field-error" id="anim-error" style="display:none; margin-top:8px;">اسم المنشط الرئيسي مطلوب</div>
                 </div>
             </div>
         </div>
@@ -313,36 +365,59 @@
         <!-- ═══ STEP 2: محتوى المجلس ═══ -->
         <div class="step-panel" id="step2">
             <div class="card">
-                <div class="card-title"><span class="icon">📥</span> محتوى المجلس</div>
+                <div class="card-title">
+                    <span class="icon">📖</span> محتوى المجلس
+                </div>
 
                 <div class="fg" id="fg-topics">
-                    <label>أهم المحاور <span class="req">*</span></label>
-                    <div class="textarea-wrap">
-                        <textarea id="mainTopics" placeholder="- المحور الأول&#10;- المحور الثاني&#10;- المحور الثالث" maxlength="1000" oninput="countChars(this, 'cnt-topics')"></textarea>
-                        <span class="char-count" id="cnt-topics">0/1000</span>
+                    <label>محتوى المجلس (الوصف) <span class="req">*</span></label>
+                    <div class="alert-box alert-blue">
+                        <span class="alert-icon">📝</span>
+                        <span class="alert-text">
+                            يُستخدم في <strong>وصف اليوتيوب</strong> والصوتيات.<br>
+                            • <strong>لشرح كتاب:</strong> من قول المصنف (كذا) إلى (كذا).<br>
+                            • <strong>لمحاضرة/محاور:</strong> تناولنا في هذا المجلس مفهوم (كذا)، والمحاور التالية...
+                        </span>
                     </div>
-                    <div class="field-error">أدخل المحاور الرئيسية للمجلس</div>
+                    <div class="textarea-wrap">
+                        <textarea id="mainTopics" placeholder="اكتب محتوى المجلس هنا بناءً على نوعه..." maxlength="1500" oninput="countChars(this, 'cnt-topics'); autoSave();"></textarea>
+                        <span class="char-count" id="cnt-topics">0 / 1500</span>
+                    </div>
+                    <div class="field-error">أدخل محتوى المجلس</div>
                 </div>
 
                 <div class="fg">
-                    <label>فوائد ولطائف <span class="optional-badge">اختياري</span></label>
+                    <label>تايم لاين المجلس (فهرس الأوقات) <span class="optional-badge">مُوصى به</span></label>
                     <div class="textarea-wrap">
-                        <textarea id="benefits" placeholder="- د 45 - قصة معبرة عن الإخلاص&#10;- 1:15 - ملاحظة ذهبية من الأستاذ" maxlength="800" oninput="countChars(this, 'cnt-ben')"></textarea>
-                        <span class="char-count" id="cnt-ben">0/800</span>
+                        <textarea id="timeline" placeholder="00:00 - مقدمة المجلس&#10;15:30 - المحور الأول..." maxlength="1000" oninput="countChars(this, 'cnt-tl'); autoSave();"></textarea>
+                        <span class="char-count" id="cnt-tl">0 / 1000</span>
                     </div>
-                    <div class="field-hint">الصيغة: الوقت التقريبي - الفائدة</div>
+                    <div class="field-hint">يُستخدم لتقسيم فصول الفيديو في يوتيوب.</div>
                 </div>
+
+                <div class="divider"><span>🎬 الفوائد والمقاطع (الريلز)</span></div>
+                
+                <div class="field-hint" style="margin-bottom:12px;">
+                    أضف الفوائد أو اللطائف التي حدثت أثناء المجلس، وقيّم مدى أهمية استخراجها كـ (Reel) لمساعدة المونتير.
+                </div>
+
+                <div id="benefitsContainer"></div>
+                
+                <button type="button" class="btn-add-dynamic" onclick="addBenefitRow()">
+                    <span>+</span> إضافة مقطع أو فائدة جديدة
+                </button>
             </div>
         </div>
 
         <!-- ═══ STEP 3: رسائل للنادي ═══ -->
         <div class="step-panel" id="step3">
             <div class="card">
-                <div class="card-title"><span class="icon">🪞</span> رسائل موجهة للنادي</div>
+                <div class="card-title">
+                    <span class="icon">💬</span> رسائل موجهة للنادي
+                </div>
 
-                <!-- المشاكل -->
                 <div class="fg">
-                    <label>1️⃣ مشاكل أثناء النشاط (قاعة، تصوير، صوت...)</label>
+                    <label>🔲 مشاكل أثناء النشاط (قاعة، تصوير، صوت...)</label>
                     <div class="radio-toggle">
                         <label class="rtog selected" id="rtog-prob-no" onclick="setRadio('prob','no')">
                             <input type="radio" name="hasProblems" value="no" checked> 😌 لا توجد
@@ -352,13 +427,12 @@
                         </label>
                     </div>
                     <div class="dynamic-area" id="area-prob">
-                        <textarea id="probsArea" placeholder="مثال: القاعة كانت مغلقة بسبب..." style="min-height:70px"></textarea>
+                        <textarea id="probsArea" placeholder="مثال: القاعة كانت مغلقة بسبب..." style="min-height:70px" oninput="autoSave()"></textarea>
                     </div>
                 </div>
 
-                <!-- التوصيات -->
                 <div class="fg">
-                    <label>2️⃣ توصيات لتطوير المجلس القادم</label>
+                    <label>🔲 توصيات لتطوير المجلس القادم</label>
                     <div class="radio-toggle">
                         <label class="rtog selected" id="rtog-recom-no" onclick="setRadio('recom','no')">
                             <input type="radio" name="hasRecoms" value="no" checked> ➖ لا توجد
@@ -368,23 +442,29 @@
                         </label>
                     </div>
                     <div class="dynamic-area" id="area-recom">
-                        <textarea id="recomsArea" placeholder="اقتراحاتك كمنشط..." style="min-height:70px"></textarea>
+                        <textarea id="recomsArea" placeholder="اقتراحاتك كمنشط..." style="min-height:70px" oninput="autoSave()"></textarea>
                     </div>
                 </div>
 
-                <!-- رسائل الأساتذة -->
                 <div class="fg">
-                    <label>3️⃣ رسائل من الأستاذ أو الطلبة</label>
+                    <label>🔲 رسائل من الأستاذ للمنشط أو النادي</label>
+                    <div class="alert-box alert-gold" style="border-color: rgba(212,168,67,0.2); background: rgba(212,168,67,0.08);">
+                        <span class="alert-icon">📌</span>
+                        <span class="alert-text">
+                            هنا تُكتب <strong>أي رسالة، طلب، أو توجيه</strong> طلبه الأستاذ من النادي.<br>
+                            مثال: نشر تصويت للموعد، اقتراح نشاط معين، طلب توفير أدوات.
+                        </span>
+                    </div>
                     <div class="radio-toggle">
                         <label class="rtog selected" id="rtog-feed-no" onclick="setRadio('feed','no')">
                             <input type="radio" name="hasFeedback" value="no" checked> ➖ لا توجد
                         </label>
                         <label class="rtog" id="rtog-feed-yes" onclick="setRadio('feed','yes')">
-                            <input type="radio" name="hasFeedback" value="yes"> 💬 توجد
+                            <input type="radio" name="hasFeedback" value="yes"> 💬 توجد رسالة
                         </label>
                     </div>
                     <div class="dynamic-area" id="area-feed">
-                        <textarea id="feedbackArea" placeholder="مثال: الأستاذ طلب توفير سبورة إضافية..." style="min-height:70px"></textarea>
+                        <textarea id="feedbackArea" placeholder="اكتب رسالة أو طلب الأستاذ بالتفصيل..." style="min-height:80px" oninput="autoSave()"></textarea>
                     </div>
                 </div>
             </div>
@@ -393,77 +473,93 @@
         <!-- ═══ STEP 4: موجه للمونتير ═══ -->
         <div class="step-panel" id="step4">
             <div class="card">
-                <div class="card-title"><span class="icon">🧑🏻‍💻</span> موجه للمونتير</div>
-
-                <div class="divider"><span>الموارد الخام</span></div>
-
-                <!-- مرئي أساسي -->
-                <div class="check-item" id="ci-vmain" onclick="toggleCheck('vmain')">
-                    <input type="checkbox" id="resVideoMain">
-                    <div class="check-box" id="cb-vmain"></div>
-                    <span class="check-item-label">🎥 التسجيل المرئي الأساسي</span>
+                <div class="card-title">
+                    <span class="icon">📦</span> موجه للمونتير
                 </div>
-                <div class="resource-detail" id="rd-vmain">
+
+                <div class="alert-box alert-blue">
+                    <span class="alert-icon">ℹ️</span>
+                    <span class="alert-text">المجلس الذي نشطته سيتم تحويله إلى مونتير، فيحتاج أن يعرف كل المعلومات والموارد التي تلزمه ليسهل عليه العمل.</span>
+                </div>
+
+                <!-- زر التخطي (أنا المونتير) -->
+                <div class="check-item" id="ci-selfEditor" onclick="toggleSelfEditor()" style="margin-bottom: 20px; border-color: var(--gold); border-width: 2px;">
+                    <div class="check-box" id="cb-selfEditor" style="border-color: var(--gold);"></div>
+                    <span class="check-item-label" style="color:var(--gold-light); font-weight:700;">أنا هو المونتير لهذا المجلس (تخطي هذا القسم)</span>
+                </div>
+
+                <div id="editor-details-section">
+                    <div class="divider"><span>الموارد الخام المتوفرة <span class="req" style="font-size:14px">*</span></span></div>
+                    
+                    <div class="field-error" id="resource-error" style="margin-bottom:10px; font-size:12px;">⚠️ يجب اختيار مورد واحد على الأقل</div>
+
+                    <div class="check-item" id="ci-vmain" onclick="toggleCheck('vmain')">
+                        <input type="checkbox" id="resVideoMain">
+                        <div class="check-box" id="cb-vmain"></div>
+                        <span class="check-item-label">📹 التسجيل المرئي الأساسي</span>
+                    </div>
+                    <div class="resource-detail" id="rd-vmain">
+                        <div class="fg">
+                            <label>أين يوجد التسجيل؟</label>
+                            <select id="locVideoMainSelect" onchange="checkOtherOpt('locVideoMainSelect','oth-vmain'); autoSave();">
+                                <option value="" disabled selected>اختر المكان...</option>
+                                <option value="هاتف النادي">📱 هاتف النادي</option>
+                                <option value="حاسوب المقر">💻 حاسوب المقر</option>
+                                <option value="درايف النادي">☁️ درايف النادي</option>
+                                <option value="other">👤 شخص آخر...</option>
+                            </select>
+                        </div>
+                        <div class="fg" id="oth-vmain" style="display:none">
+                            <input type="text" id="locVideoMainOther" placeholder="اسم الشخص ومعرفه @username" oninput="autoSave()">
+                        </div>
+                    </div>
+
+                    <div class="check-item" id="ci-vsub" onclick="toggleCheck('vsub')">
+                        <input type="checkbox" id="resVideoSub">
+                        <div class="check-box" id="cb-vsub"></div>
+                        <span class="check-item-label">📱 التسجيل المرئي الثانوي</span>
+                    </div>
+                    <div class="resource-detail" id="rd-vsub">
+                        <input type="text" id="locVideoSub" placeholder="اسم الشخص والمعرف @username" oninput="autoSave()">
+                    </div>
+
+                    <div class="check-item" id="ci-amain" onclick="toggleCheck('amain')">
+                        <input type="checkbox" id="resAudioMain">
+                        <div class="check-box" id="cb-amain"></div>
+                        <span class="check-item-label">🎙️ التسجيل الصوتي الأساسي</span>
+                    </div>
+                    <div class="resource-detail" id="rd-amain">
+                        <input type="text" id="locAudioMain" placeholder="اسم الشخص والمعرف @username" oninput="autoSave()">
+                    </div>
+
+                    <div class="check-item" id="ci-asub" onclick="toggleCheck('asub')">
+                        <input type="checkbox" id="resAudioSub">
+                        <div class="check-box" id="cb-asub"></div>
+                        <span class="check-item-label">🎧 التسجيل الصوتي الاحتياطي</span>
+                    </div>
+                    <div class="resource-detail" id="rd-asub">
+                        <input type="text" id="locAudioSub" placeholder="اسم الشخص والمعرف @username" oninput="autoSave()">
+                    </div>
+
+                    <div class="check-item" id="ci-screen" onclick="toggleCheck('screen')">
+                        <input type="checkbox" id="resScreen">
+                        <div class="check-box" id="cb-screen"></div>
+                        <span class="check-item-label">💻 تسجيل الشاشة الداخلي</span>
+                    </div>
+                    <div class="resource-detail" id="rd-screen">
+                        <input type="text" id="locScreen" placeholder="مثال: حاسوب المقر / درايف" oninput="autoSave()">
+                    </div>
+
+                    <div class="divider" style="margin-top:18px"><span>✂️ أوقات الحذف (إن وجدت)</span></div>
+                    <div id="deletionsContainer"></div>
+                    <button type="button" class="btn-add-dynamic" onclick="addDeletionRow()">
+                        <span>+</span> إضافة وقت حذف للمونتير
+                    </button>
+
+                    <div class="divider" style="margin-top:18px"><span>📝 ملاحظات أخرى للمونتير</span></div>
                     <div class="fg">
-                        <label>أين يوجد التسجيل؟</label>
-                        <select id="locVideoMainSelect" onchange="checkOtherOpt('locVideoMainSelect','oth-vmain')">
-                            <option value="" disabled selected>اختر المكان...</option>
-                            <option value="هاتف النادي">📱 هاتف النادي</option>
-                            <option value="حاسوب المقر">💻 حاسوب المقر</option>
-                            <option value="درايف النادي">☁️ درايف النادي</option>
-                            <option value="other">👤 شخص آخر...</option>
-                        </select>
+                        <textarea id="editorNotes" placeholder="مثال: إرفاق صورة الكتاب في بداية المقطع..." style="min-height:70px" oninput="autoSave()"></textarea>
                     </div>
-                    <div class="fg" id="oth-vmain" style="display:none">
-                        <input type="text" id="locVideoMainOther" placeholder="اسم الشخص ومعرفه @username">
-                    </div>
-                </div>
-
-                <!-- مرئي ثانوي -->
-                <div class="check-item" id="ci-vsub" onclick="toggleCheck('vsub')">
-                    <input type="checkbox" id="resVideoSub">
-                    <div class="check-box" id="cb-vsub"></div>
-                    <span class="check-item-label">📱 التسجيل المرئي الثانوي</span>
-                </div>
-                <div class="resource-detail" id="rd-vsub">
-                    <input type="text" id="locVideoSub" placeholder="اسم الشخص والمعرف @username">
-                </div>
-
-                <!-- صوتي أساسي -->
-                <div class="check-item" id="ci-amain" onclick="toggleCheck('amain')">
-                    <input type="checkbox" id="resAudioMain">
-                    <div class="check-box" id="cb-amain"></div>
-                    <span class="check-item-label">🎙️ التسجيل الصوتي الأساسي</span>
-                </div>
-                <div class="resource-detail" id="rd-amain">
-                    <input type="text" id="locAudioMain" placeholder="اسم الشخص والمعرف @username">
-                </div>
-
-                <!-- صوتي احتياطي -->
-                <div class="check-item" id="ci-asub" onclick="toggleCheck('asub')">
-                    <input type="checkbox" id="resAudioSub">
-                    <div class="check-box" id="cb-asub"></div>
-                    <span class="check-item-label">🎧 التسجيل الصوتي الاحتياطي</span>
-                </div>
-                <div class="resource-detail" id="rd-asub">
-                    <input type="text" id="locAudioSub" placeholder="اسم الشخص والمعرف @username">
-                </div>
-
-                <!-- تسجيل شاشة -->
-                <div class="check-item" id="ci-screen" onclick="toggleCheck('screen')">
-                    <input type="checkbox" id="resScreen">
-                    <div class="check-box" id="cb-screen"></div>
-                    <span class="check-item-label">💻 تسجيل الشاشة الداخلي</span>
-                </div>
-                <div class="resource-detail" id="rd-screen">
-                    <input type="text" id="locScreen" placeholder="مثال: حاسوب المقر / درايف">
-                </div>
-
-                <div class="divider" style="margin-top:18px"><span>ملاحظات تقنية</span></div>
-
-                <div class="fg">
-                    <label>أوقات الحذف، إرفاق صور، تنبيهات خاصة <span class="optional-badge">اختياري</span></label>
-                    <textarea id="editorNotes" placeholder="- احذف الدقيقة من 10 إلى 12&#10;- أرفق صورة الكتاب في البداية" style="min-height:75px"></textarea>
                 </div>
             </div>
         </div>
@@ -471,9 +567,19 @@
         <!-- ═══ STEP 5: مهام المجلس ═══ -->
         <div class="step-panel" id="step5">
             <div class="card">
-                <div class="card-title"><span class="icon">📋</span> مهام المجلس</div>
+                <div class="card-title">
+                    <span class="icon">📋</span> مهام ومراجعة
+                </div>
 
-                <div class="divider"><span>مهام متكررة</span></div>
+                <div class="divider"><span>المهام المتكررة</span></div>
+                
+                <div class="alert-box alert-purple">
+                    <span class="alert-icon">💡</span>
+                    <span class="alert-text">
+                        سيتم إرسال هذا التقرير للمجموعة الجامعة، إذا لم تقم بهذه المهام الآن، ستكون كتذكير لك هناك.<br>
+                        <strong>تنبيه:</strong> لا تضغط على علامة (صح) إلا إذا قمت بالمهمة فعلاً. وحينما تقوم بها لاحقاً، اعمل "رد" (Reply) على التقرير واكتب "تم".
+                    </span>
+                </div>
 
                 <div class="task-check-item" id="tci-1" onclick="toggleTask('t1')">
                     <input type="checkbox" id="task1">
@@ -483,7 +589,7 @@
                 <div class="task-check-item" id="tci-2" onclick="toggleTask('t2')">
                     <input type="checkbox" id="task2">
                     <div class="check-box" id="cb-t2"></div>
-                    <span class="check-item-label">📻 نشر التسجيل الصوتي في القناة العلمية</span>
+                    <span class="check-item-label">📻 نشر التسجيل الصوتي في القناة</span>
                 </div>
                 <div class="task-check-item" id="tci-3" onclick="toggleTask('t3')">
                     <input type="checkbox" id="task3">
@@ -493,13 +599,12 @@
 
                 <div class="divider" style="margin-top:18px"><span>مهام إضافية</span></div>
 
-                <div class="fg">
-                    <label>مهام غير متكررة <span class="optional-badge">اختياري</span></label>
-                    <textarea id="specialTasks" placeholder="مثال: نشر جدول تصويت طلبه الأستاذ..&#10;تحضير ملخص مكتوب للمجلس.."></textarea>
-                </div>
+                <div id="specialTasksContainer"></div>
+                <button type="button" class="btn-add-dynamic" onclick="addSpecialTaskRow()">
+                    <span>+</span> إضافة مهمة غير متكررة
+                </button>
 
-                <!-- PREVIEW SUMMARY -->
-                <div class="divider" style="margin-top:20px"><span>📄 مراجعة سريعة</span></div>
+                <div class="divider" style="margin-top:20px"><span>📄 مراجعة التقرير</span></div>
                 <div id="summaryArea"></div>
             </div>
         </div>
@@ -516,37 +621,348 @@
     <div class="success-screen" id="successScreen">
         <div class="success-icon">✅</div>
         <div class="success-title">أُرسل التقرير بنجاح!</div>
-        <div class="success-sub">جزاك الله خيراً على توثيق هذا المجلس 🌿<br>ستصل نسخة التقرير للقناة قريباً.</div>
+        <div class="success-sub" style="margin-bottom:20px">جزاك الله خيراً على دقة التوثيق 🌿<br>ستصل نسخة التقرير للمجموعة قريباً.</div>
     </div>
 
 </div>
 
+<!-- MODAL: تأكيد رسائل الأستاذ -->
+<div class="modal-overlay" id="feedConfirmModal">
+    <div class="modal-box">
+        <div class="modal-icon">🔔</div>
+        <div class="modal-title">تأكيد — رسائل الأستاذ</div>
+        <div class="modal-desc">
+            هل تؤكد أن الأستاذ <strong>لم يُخبرك بأي رسالة</strong> موجهة للنادي؟<br><br>
+            <span style="font-size:11px;color:var(--muted)">مثل: طلب تصويت، اقتراح نشاط، تغيير موعد...</span>
+        </div>
+        <div class="modal-btns">
+            <button class="modal-btn modal-btn-cancel" onclick="closeModal()">← رجوع للتعديل</button>
+            <button class="modal-btn modal-btn-confirm" onclick="confirmNoFeedback()">نعم، أؤكد ✓</button>
+        </div>
+    </div>
+</div>
+
+<!-- CONFETTI CONTAINER -->
+<div class="confetti-container" id="confettiContainer"></div>
+
 <script>
     const tg = window.Telegram?.WebApp;
-    if (tg) tg.expand();
+    if (tg) { tg.expand(); tg.setHeaderColor('#0a0d14'); tg.setBackgroundColor('#0a0d14'); }
+
     document.getElementById('eventDate').valueAsDate = new Date();
 
     let currentStep = 1;
     const TOTAL_STEPS = 5;
+    let pendingNextStep = false;
+    let isSelfEditor = false;
+    
+    const radioState = {};
+    const checkState = {};
+    const taskState = {};
 
-    // ══════════════════════════════════
-    // STEP NAVIGATION
-    // ══════════════════════════════════
+    // ═══ INIT & LOCAL STORAGE ═══
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedAnim = localStorage.getItem('joussour_animator');
+        if (savedAnim) document.getElementById('animator').value = savedAnim;
+        
+        updateHijriDate();
+        loadRecentSeries();
+        checkDraft();
+    });
+
+    function saveGlobalAnimator(val) {
+        if(val.trim() !== "") localStorage.setItem('joussour_animator', val.trim());
+    }
+
+    // ═══ HIJRI DATE ═══
+    function updateHijriDate() {
+        const dateVal = document.getElementById('eventDate').value;
+        if (!dateVal) return;
+        try {
+            const d = new Date(dateVal);
+            let hijri = d.toLocaleDateString('ar-SA-u-ca-islamic-nu-latn', { year: 'numeric', month: 'long', day: 'numeric' });
+            hijri = hijri.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+            document.getElementById('hijriText').textContent = hijri;
+            document.getElementById('hijriDate').style.display = 'inline-flex';
+        } catch(e) {
+            document.getElementById('hijriDate').style.display = 'none';
+        }
+    }
+
+    // ═══ DYNAMIC BENEFITS (REELS) ═══
+    function addBenefitRow(data = null) {
+        const container = document.getElementById('benefitsContainer');
+        const uniqueId = Date.now() + Math.floor(Math.random() * 1000);
+        const timeVal = data ? data.time : '';
+        const prioVal = data ? data.prio : '⭐ يُنصح';
+        const textVal = data ? data.text : '';
+
+        const html = `
+            <div class="dynamic-card" id="benefit-${uniqueId}">
+                <button type="button" class="btn-remove" onclick="removeDynamic('benefit-${uniqueId}')">✕</button>
+                <div class="form-row" style="margin-bottom:10px">
+                    <div class="fg" style="flex:0.4; margin-bottom:0;">
+                        <input type="text" class="ben-time" placeholder="الوقت (د 45)" value="${timeVal}" oninput="autoSave()">
+                    </div>
+                    <div class="fg" style="flex:0.6; margin-bottom:0;">
+                        <select class="ben-prio" onchange="autoSave()">
+                            <option value="💤 عادي" ${prioVal === '💤 عادي' ? 'selected' : ''}>💤 عادي (لا يُقص)</option>
+                            <option value="⭐ يُنصح" ${prioVal === '⭐ يُنصح' ? 'selected' : ''}>⭐ يُنصح (فائدة جيدة)</option>
+                            <option value="🔥 أنصح جداً" ${prioVal === '🔥 أنصح جداً' ? 'selected' : ''}>🔥 أنصح جداً (ريل قوي)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="fg" style="margin-bottom:0;">
+                    <input type="text" class="ben-text" placeholder="موضوع الفائدة (قصة الأعرابي...)" value="${textVal}" oninput="autoSave()">
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+        autoSave();
+    }
+
+    // ═══ DYNAMIC DELETIONS ═══
+    function addDeletionRow(data = null) {
+        const container = document.getElementById('deletionsContainer');
+        const uniqueId = Date.now() + Math.floor(Math.random() * 1000);
+        const timeVal = data ? data.time : '';
+        const reasonVal = data ? data.reason : '';
+
+        const html = `
+            <div class="dynamic-card" id="del-${uniqueId}">
+                <button type="button" class="btn-remove" onclick="removeDynamic('del-${uniqueId}')">✕</button>
+                <div class="form-row" style="margin-bottom:0">
+                    <div class="fg" style="flex:0.4; margin-bottom:0;">
+                        <input type="text" class="del-time" placeholder="الوقت (10:00 - 12:30)" value="${timeVal}" oninput="autoSave()">
+                    </div>
+                    <div class="fg" style="flex:0.6; margin-bottom:0;">
+                        <input type="text" class="del-reason" placeholder="سبب الحذف (سعال، استراحة...)" value="${reasonVal}" oninput="autoSave()">
+                    </div>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+        autoSave();
+    }
+
+    // ═══ DYNAMIC SPECIAL TASKS ═══
+    function addSpecialTaskRow(data = null) {
+        const container = document.getElementById('specialTasksContainer');
+        const uniqueId = Date.now() + Math.floor(Math.random() * 1000);
+        const textVal = data ? data.text : '';
+
+        const html = `
+            <div class="dynamic-card" id="stask-${uniqueId}" style="padding:10px;">
+                <button type="button" class="btn-remove" onclick="removeDynamic('stask-${uniqueId}')">✕</button>
+                <input type="text" class="stask-text" placeholder="مثال: تحضير ملخص مكتوب..." value="${textVal}" oninput="autoSave()">
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+        autoSave();
+    }
+
+    function removeDynamic(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.animation = 'fadeSlide 0.2s ease reverse';
+            setTimeout(() => { el.remove(); autoSave(); }, 180);
+        }
+    }
+
+    // Data Extractors
+    function getDynamicArray(selector, keys) {
+        const rows = document.querySelectorAll(selector);
+        let arr = [];
+        rows.forEach(row => {
+            let obj = {};
+            keys.forEach(k => { obj[k.key] = row.querySelector(k.class).value.trim(); });
+            arr.push(obj);
+        });
+        return arr;
+    }
+
+    function getBenefitsString() {
+        const arr = getDynamicArray('.benefit-card', [{key:'time', class:'.ben-time'}, {key:'prio', class:'.ben-prio'}, {key:'text', class:'.ben-text'}]);
+        if (!arr.length) return 'لا توجد فوائد مسجلة.';
+        return arr.map((b, i) => `${i+1}. [${b.time || 'وقت غير محدد'}] ${b.text || 'بدون موضوع'} (${b.prio})`).join('\n');
+    }
+
+    function getDeletionsString() {
+        const arr = getDynamicArray('[id^="del-"]', [{key:'time', class:'.del-time'}, {key:'reason', class:'.del-reason'}]);
+        if (!arr.length) return 'لا يوجد';
+        return arr.map(d => `✂️ من [${d.time || '؟'}] السبب: ${d.reason || 'غير محدد'}`).join('\n');
+    }
+
+    function getSpecialTasksString() {
+        const arr = getDynamicArray('[id^="stask-"]', [{key:'text', class:'.stask-text'}]);
+        if (!arr.length) return '-';
+        return arr.map(t => `➕ ${t.text}`).join('\n');
+    }
+
+    // ═══ DRAFTS & AUTO-SAVE ═══
+    let saveTimeout;
+    function autoSave() {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            const draft = {
+                seriesName: document.getElementById('seriesName').value,
+                eventNumber: document.getElementById('eventNumber').value,
+                eventDate: document.getElementById('eventDate').value,
+                animatorAssistant: document.getElementById('animatorHelper').value,
+                mainTopics: document.getElementById('mainTopics').value,
+                timeline: document.getElementById('timeline').value,
+                probsArea: document.getElementById('probsArea').value,
+                recomsArea: document.getElementById('recomsArea').value,
+                feedbackArea: document.getElementById('feedbackArea').value,
+                editorNotes: document.getElementById('editorNotes').value,
+                isSelfEditor: isSelfEditor,
+                
+                benefits: getDynamicArray('.benefit-card', [{key:'time', class:'.ben-time'}, {key:'prio', class:'.ben-prio'}, {key:'text', class:'.ben-text'}]),
+                deletions: getDynamicArray('[id^="del-"]', [{key:'time', class:'.del-time'}, {key:'reason', class:'.del-reason'}]),
+                specialTasks: getDynamicArray('[id^="stask-"]', [{key:'text', class:'.stask-text'}]),
+                
+                radioState: radioState,
+                checkState: checkState,
+                taskState: taskState,
+                savedAt: new Date().toISOString()
+            };
+            localStorage.setItem('jsoor_draft_v3', JSON.stringify(draft));
+            saveRecentSeries(draft.seriesName);
+            
+            const badge = document.getElementById('autosaveBadge');
+            badge.classList.add('show');
+            setTimeout(() => badge.classList.remove('show'), 1500);
+        }, 1500);
+    }
+
+    function checkDraft() {
+        const raw = localStorage.getItem('jsoor_draft_v3');
+        if (!raw) return;
+        try {
+            const d = JSON.parse(raw);
+            if (d.seriesName || d.mainTopics) {
+                document.getElementById('draftBanner').classList.add('visible');
+            }
+        } catch(e) {}
+    }
+
+    function restoreDraft() {
+        try {
+            const d = JSON.parse(localStorage.getItem('jsoor_draft_v3'));
+            if (!d) return;
+            
+            if (d.seriesName) { document.getElementById('seriesName').value = d.seriesName; updateHashPreview(); }
+            if (d.eventNumber) document.getElementById('eventNumber').value = d.eventNumber;
+            if (d.eventDate) document.getElementById('eventDate').value = d.eventDate;
+            if (d.animatorAssistant) document.getElementById('animatorHelper').value = d.animatorAssistant;
+            if (d.mainTopics) document.getElementById('mainTopics').value = d.mainTopics;
+            if (d.timeline) document.getElementById('timeline').value = d.timeline;
+            if (d.probsArea) document.getElementById('probsArea').value = d.probsArea;
+            if (d.recomsArea) document.getElementById('recomsArea').value = d.recomsArea;
+            if (d.feedbackArea) document.getElementById('feedbackArea').value = d.feedbackArea;
+            if (d.editorNotes) document.getElementById('editorNotes').value = d.editorNotes;
+            
+            if (d.isSelfEditor) toggleSelfEditor(true);
+
+            updateHijriDate();
+
+            document.getElementById('benefitsContainer').innerHTML = '';
+            if (d.benefits) d.benefits.forEach(b => addBenefitRow(b));
+
+            document.getElementById('deletionsContainer').innerHTML = '';
+            if (d.deletions) d.deletions.forEach(x => addDeletionRow(x));
+
+            document.getElementById('specialTasksContainer').innerHTML = '';
+            if (d.specialTasks) d.specialTasks.forEach(x => addSpecialTaskRow(x));
+
+            if (d.radioState) Object.keys(d.radioState).forEach(k => setRadio(k, d.radioState[k]));
+            if (d.checkState) Object.keys(d.checkState).forEach(k => { if(d.checkState[k] && !checkState[k]) toggleCheck(k, true); });
+            if (d.taskState) Object.keys(d.taskState).forEach(k => { if(d.taskState[k] && !taskState[k]) toggleTask(k); });
+
+            ['mainTopics:cnt-topics', 'timeline:cnt-tl'].forEach(pair => {
+                const [id, cid] = pair.split(':');
+                const el = document.getElementById(id);
+                if (el && el.value) countChars(el, cid);
+            });
+            
+            haptic('success');
+        } catch(e) {}
+        document.getElementById('draftBanner').classList.remove('visible');
+    }
+
+    function discardDraft() {
+        localStorage.removeItem('jsoor_draft_v3');
+        document.getElementById('draftBanner').classList.remove('visible');
+        haptic('light');
+    }
+
+    // ═══ RECENT SERIES ═══
+    function saveRecentSeries(name) {
+        if (!name || name.trim().length < 2) return;
+        let recent = JSON.parse(localStorage.getItem('jsour_recent_series') || '[]');
+        const clean = name.replace(/#/g,'').trim();
+        recent = recent.filter(s => s !== clean);
+        recent.unshift(clean);
+        recent = recent.slice(0, 4);
+        localStorage.setItem('jsour_recent_series', JSON.stringify(recent));
+        loadRecentSeries();
+    }
+
+    function loadRecentSeries() {
+        const recent = JSON.parse(localStorage.getItem('jsour_recent_series') || '[]');
+        const container = document.getElementById('recentSeries');
+        if (!recent.length) { container.innerHTML = ''; return; }
+        container.innerHTML = recent.map(s => `<div class="recent-pill" onclick="useRecentSeries('${s}')">📖 ${s}</div>`).join('');
+    }
+
+    function useRecentSeries(name) {
+        document.getElementById('seriesName').value = name;
+        updateHashPreview();
+        autoSave();
+        haptic('light');
+    }
+
+    // ═══ SELF EDITOR TOGGLE ═══
+    function toggleSelfEditor(forceState = null) {
+        isSelfEditor = forceState !== null ? forceState : !isSelfEditor;
+        const ci = document.getElementById('ci-selfEditor');
+        const section = document.getElementById('editor-details-section');
+        
+        if (isSelfEditor) {
+            ci.classList.add('checked');
+            section.style.display = 'none';
+            document.getElementById('resource-error').style.display = 'none';
+        } else {
+            ci.classList.remove('checked');
+            section.style.display = 'block';
+        }
+        haptic('light');
+        autoSave();
+    }
+
+    // ═══ STEP NAVIGATION ═══
     function goToStep(n) {
         if (n < 1 || n > TOTAL_STEPS) return;
         if (n > currentStep && !validateStep(currentStep)) return;
+        if (currentStep === 3 && n > 3 && radioState['feed'] !== 'yes') {
+            pendingNextStep = n; showModal(); return;
+        }
         setStep(n);
     }
 
     function nextStep() {
         if (currentStep === TOTAL_STEPS) { submitForm(); return; }
         if (!validateStep(currentStep)) return;
+        if (currentStep === 3 && radioState['feed'] !== 'yes') {
+            pendingNextStep = currentStep + 1; showModal(); return;
+        }
         if (currentStep + 1 === TOTAL_STEPS) buildSummary();
+        haptic('light');
         setStep(currentStep + 1);
     }
 
     function prevStep() {
-        if (currentStep > 1) setStep(currentStep - 1);
+        if (currentStep > 1) { haptic('light'); setStep(currentStep - 1); }
     }
 
     function setStep(n) {
@@ -558,41 +974,67 @@
     }
 
     function updateProgress() {
+        const pct = (currentStep / TOTAL_STEPS) * 100;
+        document.getElementById('progressFill').style.width = pct + '%';
+
         for (let i = 1; i <= TOTAL_STEPS; i++) {
             const dot = document.getElementById(`dot${i}`);
             const lbl = document.getElementById(`lbl${i}`);
             if (i < currentStep) { dot.className = 'step-dot done'; lbl.className = 'step-label done'; }
             else if (i === currentStep) { dot.className = 'step-dot active'; lbl.className = 'step-label active'; }
             else { dot.className = 'step-dot'; lbl.className = 'step-label'; }
-            if (i < TOTAL_STEPS) {
-                document.getElementById(`line${i}`).className = i < currentStep ? 'step-line done' : 'step-line';
-            }
+            if (i < TOTAL_STEPS) { document.getElementById(`line${i}`).className = i < currentStep ? 'step-line done' : 'step-line'; }
         }
+        
         const btnPrev = document.getElementById('btnPrev');
         const btnNext = document.getElementById('btnNext');
         btnPrev.style.display = currentStep > 1 ? 'flex' : 'none';
+        
         if (currentStep === TOTAL_STEPS) {
-            btnNext.textContent = '';
-            btnNext.innerHTML = '🚀 إرسال التقرير';
-            btnNext.className = 'btn btn-submit';
+            btnNext.innerHTML = '🚀 إرسال التقرير'; btnNext.className = 'btn btn-submit';
         } else {
-            btnNext.innerHTML = 'التالي ←';
-            btnNext.className = 'btn btn-next';
+            btnNext.innerHTML = 'التالي ←'; btnNext.className = 'btn btn-next';
         }
     }
 
-    // ══════════════════════════════════
-    // VALIDATION
-    // ══════════════════════════════════
+    // ═══ MODAL ═══
+    function showModal() { document.getElementById('feedConfirmModal').classList.add('visible'); haptic('warning'); }
+    function closeModal() { document.getElementById('feedConfirmModal').classList.remove('visible'); pendingNextStep = false; setRadio('feed', 'yes'); }
+    function confirmNoFeedback() {
+        document.getElementById('feedConfirmModal').classList.remove('visible');
+        const target = pendingNextStep; pendingNextStep = false;
+        if (target === TOTAL_STEPS) buildSummary();
+        setStep(target);
+    }
+
+    // ═══ VALIDATION & HELPERS ═══
     function validateStep(step) {
         let ok = true;
         if (step === 1) {
             ok = requireField('seriesName', 'fg-series') && ok;
             ok = requireField('eventNumber', 'fg-num') && ok;
-            ok = requireField('animator', 'fg-anim') && ok;
+            const animVal = document.getElementById('animator').value.trim();
+            const animErr = document.getElementById('anim-error');
+            if (!animVal) {
+                document.getElementById('fg-anim').classList.add('has-error'); animErr.style.display = 'flex';
+                document.getElementById('animator').focus(); ok = false;
+            } else {
+                document.getElementById('fg-anim').classList.remove('has-error'); animErr.style.display = 'none';
+            }
         } else if (step === 2) {
             ok = requireField('mainTopics', 'fg-topics') && ok;
+        } else if (step === 4) {
+            if (!isSelfEditor) {
+                const hasResource = checkState['vmain'] || checkState['vsub'] || checkState['amain'] || checkState['asub'] || checkState['screen'];
+                if (!hasResource) {
+                    document.getElementById('resource-error').style.display = 'flex';
+                    ok = false;
+                } else {
+                    document.getElementById('resource-error').style.display = 'none';
+                }
+            }
         }
+        if(!ok) haptic('error');
         return ok;
     }
 
@@ -603,9 +1045,6 @@
         fg.classList.remove('has-error'); return true;
     }
 
-    // ══════════════════════════════════
-    // HELPERS
-    // ══════════════════════════════════
     function updateHashPreview() {
         const raw = document.getElementById('seriesName').value.trim();
         const preview = document.getElementById('hashPreview');
@@ -615,114 +1054,168 @@
     }
 
     function countChars(el, counterId) {
-        const max = el.getAttribute('maxlength');
-        document.getElementById(counterId).textContent = `${el.value.length}/${max}`;
+        const max = parseInt(el.getAttribute('maxlength'));
+        const len = el.value.length;
+        const counter = document.getElementById(counterId);
+        counter.textContent = `${len} / ${max}`;
+        counter.className = 'char-count';
+        if (len > max * 0.9) counter.classList.add('full');
+        else if (len > max * 0.7) counter.classList.add('warn');
     }
 
-    // Radio toggles
-    const radioState = {};
     function setRadio(key, val) {
-        radioState[key] = val;
-        const isYes = val === 'yes';
+        radioState[key] = val; const isYes = val === 'yes';
         const map = { prob: ['area-prob', 'probsArea'], recom: ['area-recom', 'recomsArea'], feed: ['area-feed', 'feedbackArea'] };
         const [areaId] = map[key];
         document.getElementById(areaId).className = 'dynamic-area' + (isYes ? ' visible' : '');
         document.getElementById(`rtog-${key}-yes`).className = 'rtog' + (isYes ? ' selected' : '');
         document.getElementById(`rtog-${key}-no`).className = 'rtog' + (!isYes ? ' selected' : '');
+        haptic('light'); autoSave();
     }
 
-    // Checkbox checks (resources)
-    const checkState = {};
-    function toggleCheck(key) {
+    function toggleCheck(key, fromDraft = false) {
         checkState[key] = !checkState[key];
-        const ci = document.getElementById(`ci-${key}`);
-        const cb = document.getElementById(`cb-${key}`);
-        const rd = document.getElementById(`rd-${key}`);
+        const ci = document.getElementById(`ci-${key}`); const rd = document.getElementById(`rd-${key}`);
         const chk = document.getElementById(`res${capitalize(key)}`);
-        if (checkState[key]) { ci.classList.add('checked'); rd.classList.add('visible'); if(chk) chk.checked = true; }
-        else { ci.classList.remove('checked'); rd.classList.remove('visible'); if(chk) chk.checked = false; }
+        
+        if (checkState[key]) { 
+            ci.classList.add('checked'); if(rd) rd.classList.add('visible'); if(chk) chk.checked = true; 
+        } else { 
+            ci.classList.remove('checked'); if(rd) rd.classList.remove('visible'); if(chk) chk.checked = false; 
+        }
+
+        // إخفاء الصوت الأساسي إذا تم اختيار الفيديو الأساسي
+        if (key === 'vmain') {
+            const audioMainEl = document.getElementById('ci-amain');
+            if (checkState['vmain']) {
+                audioMainEl.style.display = 'none';
+                if(checkState['amain']) toggleCheck('amain'); // uncheck it
+            } else {
+                audioMainEl.style.display = 'flex';
+            }
+        }
+
+        if(!fromDraft) { haptic('light'); autoSave(); }
     }
+    
     function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+    function checkOtherOpt(selId, othId) { document.getElementById(othId).style.display = document.getElementById(selId).value === 'other' ? 'block' : 'none'; }
 
-    function checkOtherOpt(selId, othId) {
-        document.getElementById(othId).style.display = document.getElementById(selId).value === 'other' ? 'block' : 'none';
-    }
-
-    // Task checks
-    const taskState = {};
     function toggleTask(key) {
         taskState[key] = !taskState[key];
         const numMap = { t1: '1', t2: '2', t3: '3' };
-        const tci = document.getElementById(`tci-${numMap[key]}`);
-        const cb = document.getElementById(`cb-${key}`);
-        const chk = document.getElementById(`task${numMap[key]}`);
+        const tci = document.getElementById(`tci-${numMap[key]}`); const chk = document.getElementById(`task${numMap[key]}`);
         if (taskState[key]) { tci.classList.add('checked'); if(chk) chk.checked = true; }
         else { tci.classList.remove('checked'); if(chk) chk.checked = false; }
+        haptic('light'); autoSave();
     }
 
-    // ══════════════════════════════════
-    // SUMMARY BUILDER
-    // ══════════════════════════════════
+    function haptic(type) {
+        if (tg?.HapticFeedback) {
+            if (type === 'light') tg.HapticFeedback.impactOccurred('light');
+            else tg.HapticFeedback.notificationOccurred(type);
+        }
+    }
+
+    // ═══ CONFETTI ═══
+    function launchConfetti() {
+        const container = document.getElementById('confettiContainer');
+        const colors = ['#d4a843', '#f0c862', '#4ade80', '#3b82f6'];
+        for (let i = 0; i < 50; i++) {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.style.left = Math.random() * 100 + '%';
+            piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            piece.style.width = (Math.random() * 8 + 6) + 'px';
+            piece.style.height = (Math.random() * 8 + 6) + 'px';
+            piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+            piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            piece.style.animationDelay = Math.random() * 0.5 + 's';
+            container.appendChild(piece);
+        }
+    }
+
+    // ═══ SUMMARY BUILDER ═══
     function buildSummary() {
         const series = document.getElementById('seriesName').value.trim().replace(/#/g,'');
         const hash = series.replace(/\s+/g,'_');
         const num = document.getElementById('eventNumber').value;
-        const date = document.getElementById('eventDate').value;
-        const anim = document.getElementById('animator').value.trim();
+        const animM = document.getElementById('animator').value.trim();
+        const animH = document.getElementById('animatorHelper').value.trim();
         const topics = document.getElementById('mainTopics').value.trim();
 
         let resourcesList = [];
-        if (checkState['vmain']) resourcesList.push('مرئي أساسي');
-        if (checkState['vsub']) resourcesList.push('مرئي ثانوي');
-        if (checkState['amain']) resourcesList.push('صوتي أساسي');
-        if (checkState['asub']) resourcesList.push('صوتي احتياطي');
-        if (checkState['screen']) resourcesList.push('تسجيل شاشة');
+        if (isSelfEditor) {
+            resourcesList.push('المنشط هو المونتير (تم التخطي)');
+        } else {
+            if (checkState['vmain']) resourcesList.push('مرئي أساسي');
+            if (checkState['vsub']) resourcesList.push('مرئي ثانوي');
+            if (checkState['amain']) resourcesList.push('صوتي أساسي');
+            if (checkState['asub']) resourcesList.push('صوتي احتياطي');
+            if (checkState['screen']) resourcesList.push('تسجيل شاشة');
+        }
 
         let tasksList = [];
         if (taskState['t1']) tasksList.push('رفع المرئية');
         if (taskState['t2']) tasksList.push('نشر الصوت');
         if (taskState['t3']) tasksList.push('برمجة التذكير');
 
+        const hasBenefits = document.querySelectorAll('.benefit-card').length > 0;
+
         const html = `
             <div class="summary-section">
                 <div class="summary-title">📍 هوية المجلس</div>
                 <div class="summary-row"><span class="summary-key">السلسلة:</span><span class="summary-val">${series} — #${hash}</span></div>
                 <div class="summary-row"><span class="summary-key">الرقم:</span><span class="summary-val">${num}</span></div>
-                <div class="summary-row"><span class="summary-key">التاريخ:</span><span class="summary-val">${date}</span></div>
-                <div class="summary-row"><span class="summary-key">المنشط:</span><span class="summary-val">${anim}</span></div>
+                <div class="summary-row"><span class="summary-key">المنشط:</span><span class="summary-val">${animM} ${animH ? `<span style="color:var(--muted);font-size:10px">(مساعد: ${animH})</span>` : ''}</span></div>
             </div>
             <div class="summary-section">
-                <div class="summary-title">📥 المحاور</div>
-                <div class="summary-val" style="font-size:12px;white-space:pre-wrap;line-height:1.7">${topics.substring(0,200)}${topics.length>200?'..':''}</div>
+                <div class="summary-title">📖 المحتوى</div>
+                <div class="summary-val" style="font-size:12px;white-space:pre-wrap;line-height:1.7">${topics.substring(0,100)}${topics.length>100?'..':''}</div>
+                ${hasBenefits ? `<div style="margin-top:8px"><span class="tag-pill">تمت إضافة مقاطع للمونتاج ✓</span></div>` : ''}
             </div>
-            ${resourcesList.length ? `<div class="summary-section"><div class="summary-title">🧑🏻‍💻 الموارد</div><div>${resourcesList.map(r=>`<span class="tag-pill">${r}</span>`).join('')}</div></div>` : ''}
-            ${tasksList.length ? `<div class="summary-section"><div class="summary-title">📋 المهام المؤكدة</div><div>${tasksList.map(t=>`<span class="tag-pill">${t}</span>`).join('')}</div></div>` : ''}
+            ${resourcesList.length ? `<div class="summary-section"><div class="summary-title">📦 الموارد المتوفرة</div><div>${resourcesList.map(r=>`<span class="tag-pill">${r}</span>`).join('')}</div></div>` : ''}
+            ${tasksList.length ? `<div class="summary-section"><div class="summary-title">✅ المهام المؤكدة</div><div>${tasksList.map(t=>`<span class="tag-pill">${t}</span>`).join('')}</div></div>` : ''}
         `;
         document.getElementById('summaryArea').innerHTML = html;
     }
 
-    // ══════════════════════════════════
-    // SUBMIT
-    // ══════════════════════════════════
+    // ═══ SUBMIT ═══
     function submitForm() {
         const rawSeries = document.getElementById('seriesName').value.trim();
         const cleanName = rawSeries.replace(/#/g, '').trim();
         const hashName = cleanName.replace(/\s+/g, '_');
         const eventNum = document.getElementById('eventNumber').value.trim();
-        const animator = document.getElementById('animator').value.trim();
+        
+        const animatorMain = document.getElementById('animator').value.trim();
+        const animatorSub = document.getElementById('animatorHelper').value.trim();
         const topics = document.getElementById('mainTopics').value.trim();
+        const timeline = document.getElementById('timeline').value.trim();
+
+        const benefitsStr = getBenefitsString();
+        const deletionsStr = getDeletionsString();
+        const sTasksStr = getSpecialTasksString();
 
         let resources = "";
-        if (checkState['vmain']) {
-            let val = document.getElementById('locVideoMainSelect').value;
-            if (val === 'other') val = document.getElementById('locVideoMainOther').value;
-            resources += `🎥 مرئي أساسي: ${val || 'لم يحدد'}\n`;
+        let edNotes = "-";
+
+        if (isSelfEditor) {
+            resources = "المنشط هو المونتير - تم تخطي إدخال الموارد.";
+            edNotes = "المنشط هو المونتير.";
+        } else {
+            if (checkState['vmain']) {
+                let val = document.getElementById('locVideoMainSelect').value;
+                if (val === 'other') val = document.getElementById('locVideoMainOther').value;
+                resources += `📹 مرئي أساسي: ${val || 'لم يحدد'}\n`;
+            }
+            if (checkState['vsub']) resources += `📱 مرئي ثانوي: ${document.getElementById('locVideoSub').value || 'لم يحدد'}\n`;
+            if (checkState['amain']) resources += `🎙️ صوتي أساسي: ${document.getElementById('locAudioMain').value || 'لم يحدد'}\n`;
+            if (checkState['asub']) resources += `🎧 صوتي احتياطي: ${document.getElementById('locAudioSub').value || 'لم يحدد'}\n`;
+            if (checkState['screen']) resources += `💻 تسجيل شاشة: ${document.getElementById('locScreen').value || 'لم يحدد'}\n`;
+            if (!resources) resources = 'لا توجد موارد محددة.';
+            
+            edNotes = document.getElementById('editorNotes').value || '-';
         }
-        if (checkState['vsub']) resources += `📱 مرئي ثانوي: ${document.getElementById('locVideoSub').value || 'لم يحدد'}\n`;
-        if (checkState['amain']) resources += `🎙️ صوتي أساسي: ${document.getElementById('locAudioMain').value || 'لم يحدد'}\n`;
-        if (checkState['asub']) resources += `🎧 صوتي احتياطي: ${document.getElementById('locAudioSub').value || 'لم يحدد'}\n`;
-        if (checkState['screen']) resources += `💻 تسجيل شاشة: ${document.getElementById('locScreen').value || 'لم يحدد'}\n`;
-        if (!resources) resources = 'لا توجد موارد محددة.';
 
         let tasksStr = '';
         if (taskState['t1']) tasksStr += '☑️ رفع المرئية\n';
@@ -731,31 +1224,41 @@
 
         const probVal = radioState['prob'] === 'yes' ? (document.getElementById('probsArea').value || 'لم تُحدد') : 'لا توجد مشاكل (الحمد لله)';
         const recomVal = radioState['recom'] === 'yes' ? (document.getElementById('recomsArea').value || 'لم تُحدد') : 'لا توجد';
-        const feedVal = radioState['feed'] === 'yes' ? (document.getElementById('feedbackArea').value || 'لم تُحدد') : 'لا توجد';
+        
+        let feedVal = 'لا توجد';
+        if (radioState['feed'] === 'yes') {
+            feedVal = document.getElementById('feedbackArea').value || 'لم تُحدد التفاصيل';
+        } else {
+            feedVal = '✔️ مؤكد: لا توجد أي رسائل أو توجيهات من الأستاذ';
+        }
 
         const payload = {
             hashtag: `#تقرير_المجالس #${hashName}`,
             searchName: `[${cleanName}]`,
             eventNumber: eventNum,
             eventDate: document.getElementById('eventDate').value,
-            animator,
+            hijriDate: document.getElementById('hijriText').textContent || '-',
+            
+            animatorMain: animatorMain,
+            animatorSub: animatorSub || 'لا يوجد',
+            
             mainTopics: topics,
-            benefits: document.getElementById('benefits').value || '-',
+            timeline: timeline || '-',
+            
+            benefits: benefitsStr, 
+            deletions: deletionsStr,
+            
             problems: probVal,
             recommendations: recomVal,
             feedback: feedVal,
-            resources,
-            editorNotes: document.getElementById('editorNotes').value || '-',
+            
+            resources: resources,
+            editorNotes: edNotes,
             tasksDone: tasksStr || 'لم تُحدد مهام',
-            specialTasks: document.getElementById('specialTasks').value || '-'
+            specialTasks: sTasksStr
         };
 
         const WEBHOOK_URL = 'https://hook.eu1.make.com/0tnh2m9uchxl7newnf9uyuvhgd081fnc';
-        if (WEBHOOK_URL === 'YOUR_MAKE_WEBHOOK_URL_HERE') {
-            if (tg) tg.showAlert('تنبيه للمطور: أضف رابط Webhook في الكود.');
-            else alert('تنبيه: أضف رابط Webhook في الكود.');
-            return;
-        }
 
         const btn = document.getElementById('btnNext');
         btn.classList.add('loading');
@@ -768,19 +1271,44 @@
         }).then(() => {
             document.querySelector('.steps-container').style.display = 'none';
             document.getElementById('navBar').style.display = 'none';
+            document.querySelector('.progress-wrap').style.display = 'none';
             document.getElementById('successScreen').classList.add('visible');
-            setTimeout(() => { if (tg) tg.close(); }, 2800);
+            haptic('success');
+            launchConfetti();
+            localStorage.removeItem('jsoor_draft_v3');
+            setTimeout(() => { if (tg) tg.close(); }, 3500);
         }).catch(() => {
             if (tg) tg.showAlert('⚠️ حدث خطأ في الاتصال. تحقق من الإنترنت وأعد المحاولة.');
             else alert('خطأ في الاتصال.');
             btn.classList.remove('loading');
             updateProgress();
+            haptic('error');
         });
     }
 
-    // Remove error on input
-    document.querySelectorAll('input, textarea').forEach(el => {
-        el.addEventListener('input', () => el.closest('.fg')?.classList.remove('has-error'));
+    // ═══ SWIPE & KEYBOARD ═══
+    let touchStartX = 0, touchEndX = 0;
+    const sc = document.querySelector('.steps-container');
+    sc.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+    sc.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 60) {
+            if (diff > 0) nextStep(); // swipe left = next (RTL)
+            else prevStep(); // swipe right = prev
+        }
+    }, { passive: true });
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.target.matches('textarea')) { e.preventDefault(); nextStep(); }
+    });
+
+    document.querySelectorAll('input, textarea, select').forEach(el => {
+        el.addEventListener('input', () => {
+            el.closest('.fg')?.classList.remove('has-error');
+            document.getElementById('anim-error') && (document.getElementById('anim-error').style.display = 'none');
+            document.getElementById('resource-error') && (document.getElementById('resource-error').style.display = 'none');
+        });
     });
 </script>
 </body>
